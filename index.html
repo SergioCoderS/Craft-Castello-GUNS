@@ -5,18 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Castello Guns</title>
 <style>
-body { margin:0; padding:0; font-family:Arial,sans-serif; background:url('background.png') no-repeat center center fixed; background-size:cover; color:#fff; }
-.header { text-align:center; font-size:48px; font-weight:bold; padding:20px 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); letter-spacing:2px; text-shadow: 2px 2px 8px #000, 0 0 10px #ff0000; color: #ff4444; font-family: "Georgia", serif; user-select:none; }
+body {
+  margin:0; padding:0; font-family:Arial,sans-serif;
+  background:url('background.png') no-repeat center center fixed; background-size:cover;
+  color:#fff;
+}
+.header {
+  text-align:center; font-size:48px; font-weight:bold; padding:20px 0;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+  letter-spacing:2px; text-shadow: 2px 2px 8px #000, 0 0 10px #ff0000; color: #ff4444;
+  font-family: "Georgia", serif; user-select:none;
+}
 .container { display:flex; min-height:calc(100vh - 100px); }
-.menu { width:200px; background: rgba(0,0,0,0.7); padding:20px; box-sizing:border-box; display:flex; flex-direction:column; }
-.menu div { padding:12px; margin-bottom:5px; background: rgba(255,255,255,0.05); cursor:pointer; border-radius:5px; transition:0.2s; }
+.menu {
+  width:200px; background: rgba(0,0,0,0.7); padding:20px; box-sizing:border-box;
+  display:flex; flex-direction:column;
+}
+.menu div { padding:12px; margin-bottom:5px; background: rgba(255,255,255,0.05);
+  cursor:pointer; border-radius:5px; transition:0.2s; }
 .menu div:hover, .menu .active { background: rgba(255,255,255,0.2); }
 .content { flex:1; padding:20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); overflow-y:auto; }
 .items { margin-top:10px; }
-.items div { padding:10px; margin-bottom:5px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:5px; transition:0.2s; }
+.items div { padding:10px; margin-bottom:5px; background: rgba(255,255,255,0.1);
+  cursor:pointer; border-radius:5px; transition:0.2s; }
 .items div:hover { background: rgba(255,255,255,0.2); }
-.result { margin-top:15px; background: rgba(0,0,0,0.35); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
-@media(max-width:700px){ .container { flex-direction:column; } .menu { width:100%; display:flex; overflow-x:auto; flex-wrap:nowrap; } .menu div { flex:0 0 auto; margin-right:5px; } }
+.result { margin-top:15px; background: rgba(0,0,0,0.35); padding:15px;
+  border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
+@media(max-width:700px){
+  .container { flex-direction:column; }
+  .menu { width:100%; display:flex; overflow-x:auto; flex-wrap:nowrap; }
+  .menu div { flex:0 0 auto; margin-right:5px; }
+}
 </style>
 </head>
 <body>
@@ -36,8 +55,8 @@ body { margin:0; padding:0; font-family:Arial,sans-serif; background:url('backgr
 
   <div class="content">
     <div class="items" id="items"></div>
-    <div class="result" id="result">Виберіть предмет щоб побачити ресурси</div>
-    <div class="result" id="partsResult">Виберіть предмет щоб побачити запчастини</div>
+    <div class="result" id="resources">Виберіть предмет щоб побачити ресурси</div>
+    <div class="result" id="parts">Виберіть предмет щоб побачити запчастини</div>
   </div>
 </div>
 
@@ -86,37 +105,41 @@ const weapons = {
   ammo: {}
 };
 
-// --- Рекурсивний підрахунок ресурсів ---
-function getResources(item, qty=1, result={}){
-  if(weapons.parts[item] || weapons.ingots[item]){
-    const obj = weapons.parts[item] || weapons.ingots[item];
-    for(let k in obj) getResources(k,obj[k]*qty,result);
-  } else {
+// --- Рекурсивний підрахунок ---
+function getResources(item, qty=1, result={}, partsResult={}) {
+  // Спершу додаємо прямі запчастини
+  if(weapons.parts[item]){
+    partsResult[item]=(partsResult[item]||0)+qty;
+    for(let k in weapons.parts[item]){
+      getResources(k, weapons.parts[item][k]*qty, result, partsResult);
+    }
+  }
+  // Якщо предмет — зброя
+  else if(weapons.rifles[item] || weapons.shotguns[item] || weapons.revolvers[item] || weapons.repeaters[item]){
+    const obj = weapons.rifles[item] || weapons.shotguns[item] || weapons.revolvers[item] || weapons.repeaters[item];
+    for(let k in obj) getResources(k,obj[k]*qty,result,partsResult);
+  }
+  // Якщо предмет — злиток
+  else if(weapons.ingots[item]){
+    const obj = weapons.ingots[item];
+    for(let k in obj) getResources(k,obj[k]*qty,result,partsResult);
+  }
+  // Інакше — сировина
+  else {
     result[item]=(result[item]||0)+qty;
   }
-  return result;
+  return {resources: result, parts: partsResult};
 }
 
-// --- Показ ресурсів і запчастин ---
+// --- Показ ---
 function displayResources(item){
-  // Ресурси
-  let total = getResources(item);
-  let text=`🛠 Ресурси на ${item}:\n\n`;
-  for(let k in total) text+=`• ${k}: ${total[k]}\n`;
-  document.getElementById('result').innerText = text;
-
-  // Запчастини (тільки прямі)
-  let partsText = `🔧 Запчастини для ${item}:\n\n`;
-  let direct = null;
-  ["revolvers","rifles","repeaters","shotguns"].forEach(cat=>{
-    if(weapons[cat][item]) direct = weapons[cat][item];
-  });
-  if(direct){
-    for(let k in direct) partsText+=`• ${k}: ${direct[k]}\n`;
-  } else {
-    partsText += "Немає запчастин";
-  }
-  document.getElementById('partsResult').innerText = partsText;
+  const {resources, parts} = getResources(item);
+  let text="Ресурси:\n\n";
+  for(let k in resources) text+=`• ${k}: ${resources[k]}\n`;
+  let partsText="Запчастини:\n\n";
+  for(let k in parts) partsText+=`• ${k}: ${parts[k]}\n`;
+  document.getElementById('resources').innerText=text;
+  document.getElementById('parts').innerText=partsText;
 }
 
 // --- Меню ---
@@ -129,19 +152,20 @@ menu.querySelectorAll('div').forEach(m=>{
     const cat = m.dataset.category;
     itemsDiv.innerHTML='';
     for(let item in weapons[cat]){
-      const d = document.createElement('div');
+      const d=document.createElement('div');
       d.textContent=item;
-      d.onclick = ()=>displayResources(item);
+      d.onclick=()=>displayResources(item);
       itemsDiv.appendChild(d);
     }
-    document.getElementById('result').innerText='Виберіть предмет щоб побачити ресурси';
-    document.getElementById('partsResult').innerText='Виберіть предмет щоб побачити запчастини';
+    document.getElementById('resources').innerText='Виберіть предмет щоб побачити ресурси';
+    document.getElementById('parts').innerText='Виберіть предмет щоб побачити запчастини';
   }
 });
 </script>
-
 </body>
 </html>
+
+
 
 
 
