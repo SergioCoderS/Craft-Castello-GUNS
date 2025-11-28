@@ -61,86 +61,185 @@
 
     <div class="section">
       <label>Оберіть зброю:</label>
-      <select id="weaponSelect">
-        <option value="bolt">Bolt Action</option>
-      </select>
-      <button id="weaponButton">Покажи ресурси на зброю</button>
+      <select id="weaponSelect"></select>
+      <button id="weaponButton">Показати ресурси</button>
       <div class="result" id="weaponResult"></div>
     </div>
 
     <div class="section">
-      <label>Оберіть злиток / проміжний матеріал:</label>
-      <select id="ingotSelect">
-        <option value="iron">Злиток заліза</option>
-        <option value="steel">Злиток сталі</option>
-        <option value="clayForm">Глиняна форма</option>
-      </select>
-      <button id="ingotButton">Покажи ресурси на злиток</button>
+      <label>Оберіть злиток / матеріал:</label>
+      <select id="ingotSelect"></select>
+      <button id="ingotButton">Показати ресурси</button>
       <div class="result" id="ingotResult"></div>
     </div>
   </div>
 
   <script>
+    // -------------------------------
+    // Дані зброї
+    // -------------------------------
+    const weaponsData = {
+      "Гвинтівка Bolt Action": {
+        "Корпус важкої зброї": 1,
+        "Дуло": 1,
+        "Дерево": 10,
+        "Шуруп": 5,
+        "Пружина": 2,
+        "Злиток сталі": 2
+      },
+
+      "Гвинтівка Springfield": {
+        "Корпус важкої зброї": 1,
+        "Дуло": 1,
+        "Дерево": 20,
+        "Шуруп": 10,
+        "Пружина": 3,
+        "Злиток сталі": 4
+      },
+
+      "Дробовик Double Barrel": {
+        "Корпус важкої зброї": 1,
+        "Дуло": 2,
+        "Дерево": 5,
+        "Шуруп": 20,
+        "Пружина": 2,
+        "Злиток сталі": 3
+      },
+
+      "Дробовик Repeating": {
+        "Корпус важкої зброї": 1,
+        "Дуло": 1,
+        "Дерево": 5,
+        "Шуруп": 15,
+        "Пружина": 2,
+        "Злиток сталі": 2
+      },
+
+      "Дробовик Semi-Auto": {
+        "Корпус важкої зброї": 1,
+        "Дуло": 1,
+        "Дерево": 5,
+        "Шуруп": 15,
+        "Пружина": 2,
+        "Злиток сталі": 2,
+        "Злиток срібла": 2,
+        "Злиток золота": 2
+      }
+    };
+
+    // -------------------------------
+    // Дані злитків
+    // -------------------------------
+    const ingotsData = {
+      "Глиняна форма": {
+        "Глина": 5,
+        "Вугілля": 5
+      },
+
+      "Злиток заліза": {
+        "Залізна руда": 10,
+        "Вугілля": 5,
+        "Глиняна форма": 1
+      },
+
+      "Злиток сталі": {
+        "Злиток заліза": 1,
+        "Вугілля": 5,
+        "Глиняна форма": 1
+      },
+
+      "Злиток срібла": {
+        "Срібна руда": 10,
+        "Вугілля": 5,
+        "Глиняна форма": 1
+      },
+
+      "Злиток золота": {
+        "Вугілля": 5,
+        "Глиняна форма": 1,
+        "Варіанти": {
+          "Золота руда": 10,
+          "Великий самородок": 10,
+          "Середній самородок": 10,
+          "Малий самородок": 30
+        }
+      }
+    };
+
+    // Заповнення select списків
+    const weaponSelect = document.getElementById("weaponSelect");
+    const ingotSelect = document.getElementById("ingotSelect");
+
+    Object.keys(weaponsData).forEach(w => {
+      const opt = document.createElement("option");
+      opt.value = w;
+      opt.textContent = w;
+      weaponSelect.appendChild(opt);
+    });
+
+    Object.keys(ingotsData).forEach(i => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      ingotSelect.appendChild(opt);
+    });
+
+    // -------------------------------
+    // Показ / приховування результату
+    // -------------------------------
     let weaponVisible = false;
     let ingotVisible = false;
 
-    document.getElementById('weaponButton').addEventListener('click', function() {
-      const weapon = document.getElementById('weaponSelect').value;
-      const resultDiv = document.getElementById('weaponResult');
+    document.getElementById("weaponButton").addEventListener("click", () => {
+      const output = document.getElementById("weaponResult");
 
       if (weaponVisible) {
-        resultDiv.innerText = '';
+        output.innerText = "";
         weaponVisible = false;
         return;
       }
 
-      let text = '';
-      if (weapon === 'bolt') {
-        text += '🪓 Ресурси на зброю:\n';
-        text += '- Корпус: 1 шт\n';
-        text += '- Дуло: 1 шт\n';
-        text += '- Дерево: 35\n';
-        text += '- Шурупи: 20\n';
-        text += '- Пружини: 3\n';
-        text += '- Злитки заліза: 11\n';
-        text += '- Злитки сталі: 7\n';
-        text += '- Залізна руда: 110\n';
-        text += '- Вугілля: 180\n';
-        text += '- Глина: 90\n';
+      const item = weaponSelect.value;
+      const data = weaponsData[item];
+
+      let text = "🪓 Ресурси на " + item + ":\n";
+      for (let i in data) {
+        text += `- ${i}: ${data[i]}\n`;
       }
 
-      resultDiv.innerText = text;
+      output.innerText = text;
       weaponVisible = true;
     });
 
-    document.getElementById('ingotButton').addEventListener('click', function() {
-      const ingot = document.getElementById('ingotSelect').value;
-      const resultDiv = document.getElementById('ingotResult');
+    document.getElementById("ingotButton").addEventListener("click", () => {
+      const output = document.getElementById("ingotResult");
 
       if (ingotVisible) {
-        resultDiv.innerText = '';
+        output.innerText = "";
         ingotVisible = false;
         return;
       }
 
-      let text = '';
-      if (ingot === 'iron') {
-        text += '⚙️ Ресурси на Злиток заліза:\n';
-        text += '- Залізна руда: 10\n';
-        text += '- Вугілля: 5\n';
-        text += '- Глиняна форма: 1\n';
-      } else if (ingot === 'steel') {
-        text += '⚙️ Ресурси на Злиток сталі:\n';
-        text += '- Злиток заліза: 1\n';
-        text += '- Вугілля: 5\n';
-        text += '- Глиняна форма: 1\n';
-      } else if (ingot === 'clayForm') {
-        text += '⚙️ Ресурси на Глиняну форму:\n';
-        text += '- Глина: 5\n';
-        text += '- Вугілля: 5\n';
+      const item = ingotSelect.value;
+      const data = ingotsData[item];
+
+      let text = "⚙️ Ресурси на " + item + ":\n";
+
+      if (item === "Злиток золота") {
+        text += "- Вугілля: 5\n";
+        text += "- Глиняна форма: 1\n";
+        text += "Варіанти заміни основної сировини:\n";
+        text += "  • Золота руда: 10\n";
+        text += "  • Великі самородки: 10\n";
+        text += "  • Середні самородки: 20\n";
+        text += "  • Малі самородки: 30\n";
+      } else {
+        for (let i in data) {
+          text += `- ${i}: ${data[i]}\n`;
+        }
       }
 
-      resultDiv.innerText = text;
+      output.innerText = text;
       ingotVisible = true;
     });
   </script>
