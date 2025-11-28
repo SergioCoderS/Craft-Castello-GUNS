@@ -7,7 +7,7 @@
 <style>
 body {
   margin:0; padding:0; font-family:Arial,sans-serif;
-  background:url('background.png') no-repeat center center fixed; 
+  background:url('background.png') no-repeat center center fixed;
   background-size:cover;
   color:#fff;
 }
@@ -18,19 +18,20 @@ body {
   font-family:"Georgia", serif; user-select:none;
 }
 .container { display:flex; min-height:100vh; flex-direction:row; }
-.menu { width:200px; background: rgba(0,0,0,0.7); padding:20px; box-sizing:border-box; display:flex; flex-direction:column; }
-.menu div { padding:12px; margin-bottom:5px; background: rgba(255,255,255,0.05); cursor:pointer; border-radius:5px; transition:0.2s; }
+.menu { width:220px; background: rgba(0,0,0,0.7); padding:20px; box-sizing:border-box; display:flex; flex-direction:column; gap:6px; }
+.menu div { padding:12px; background: rgba(255,255,255,0.05); cursor:pointer; border-radius:6px; transition:0.2s; }
 .menu div:hover, .menu .active { background: rgba(255,255,255,0.2); }
 .content { flex:1; padding:20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); overflow-y:auto; }
-.items { margin-top:10px; }
-.items div { padding:10px; margin-bottom:5px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:5px; transition:0.2s; }
-.items div:hover { background: rgba(255,255,255,0.2); }
-.result, .parts { margin-top:15px; background: rgba(0,0,0,0.35); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
-@media(max-width:700px){
-  .container { flex-direction:column; }
-  .menu { width:100%; display:flex; overflow-x:auto; flex-wrap:nowrap; }
-  .menu div { flex:0 0 auto; margin-right:5px; }
-}
+.controls { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+.items { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; }
+.items .item { padding:10px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:6px; transition:0.2s; }
+.items .item:hover { background: rgba(255,255,255,0.2); }
+.items .active-item { outline: 2px solid #ff4444; }
+.block { margin-top:15px; background: rgba(0,0,0,0.35); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
+label { display:inline-flex; align-items:center; gap:8px; }
+input, select { padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.3); color:#fff; }
+input[type="number"] { width:90px; }
+.section-title { font-weight:bold; color:#ffdddd; margin-bottom:6px; display:inline-block; }
 </style>
 </head>
 <body>
@@ -45,18 +46,29 @@ body {
     <div data-category="shotguns">Дробовики</div>
     <div data-category="ingots">Злитки</div>
     <div data-category="parts">Запчастини</div>
-    <div data-category="ammo">Набої</div>
   </div>
 
   <div class="content">
+    <div class="controls">
+      <label>Кількість: <input type="number" id="qty" value="1" min="1"></label>
+      <label id="goldSelector" style="display:none;">Золото:
+        <select id="goldOption">
+          <option value="0">Золота руда (10)</option>
+          <option value="1">Середній самородок (20)</option>
+          <option value="2">Малий самородок (30)</option>
+        </select>
+      </label>
+    </div>
+
     <div class="items" id="items"></div>
-    <div class="result" id="result">Виберіть предмет щоб побачити ресурси</div>
-    <div class="parts" id="parts" style="display:none;"></div>
+
+    <div class="block" id="summary">Виберіть предмет</div>
   </div>
 </div>
 
 <script>
-const weapons = {
+// Дані
+const data = {
   rifles: {
     "Гвинтівка Boltaction": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":25, "Злиток сталі":4 },
     "Гвинтівка Springfield": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":20, "Злиток сталі":4 }
@@ -99,139 +111,163 @@ const weapons = {
     "Злиток свинцю": { "Свинцева руда":10, "Вугілля":5, "Глиняна форма":1 },
     "Злиток латуні": { "Злиток міді":1, "Злиток цинку":1, "Вугілля":5, "Глиняна форма":1 },
     "Злиток цинку": { "Цинкова руда":10, "Вугілля":5, "Глиняна форма":1 }
-  },
-  ammo: {}
+  }
 };
 
-// Розгортання ресурсів (запчастини → злитки → руда)
-// Підтримує як об'єкти (звичайні рецепти), так і масиви (альтернативні рецепти)
-function getResources(item, qty = 1, result = {}) {
-  const all = { ...weapons.parts, ...weapons.ingots };
-
-  if (all[item]) {
-    const recipe = all[item];
-
-    if (Array.isArray(recipe)) {
-      // Альтернативні рецепти (показати всі варіанти)
-      recipe.forEach((variant, idx) => {
-        const subRes = {};
-        for (const k in variant) {
-          getResources(k, variant[k] * qty, subRes);
-        }
-        // Кладемо під ключ "Варіант N" як окремий набір
-        result[`Варіант ${idx + 1}`] = mergeResources(result[`Варіант ${idx + 1}`], subRes);
-      });
-    } else {
-      // Звичайний рецепт-об'єкт
-      for (const k in recipe) {
-        getResources(k, recipe[k] * qty, result);
-      }
-    }
-  } else {
-    // Базові ресурси (листя дерева)
-    result[item] = (result[item] || 0) + qty;
-  }
-
-  return result;
-}
-
-// Допоміжне злиття ресурсів (плоских об'єктів)
-function mergeResources(target = {}, source = {}) {
-  const out = { ...target };
-  for (const k in source) {
-    out[k] = (out[k] || 0) + source[k];
-  }
-  return out;
-}
-
-// Відображення ресурсів для вибраного предмета
-function displayResources(item){
-  const allWeapons = { ...weapons.rifles, ...weapons.shotguns, ...weapons.revolvers, ...weapons.repeaters };
-  let res = {};
-
-  if (allWeapons[item]) {
-    // Якщо це зброя — розгортаємо запчастини у базові ресурси
-    for (const p in allWeapons[item]) {
-      getResources(p, allWeapons[item][p], res);
-    }
-  } else {
-    // Якщо це запчастина або злиток — розгортаємо напряму
-    res = getResources(item);
-  }
-
-  // Формування тексту з урахуванням альтернативних варіантів (якщо є)
-  let text = `Ресурси на ${item}:\n\n`;
-  const hasVariants = Object.keys(res).some(k => k.startsWith('Варіант '));
-
-  if (hasVariants) {
-    // Виводимо кожен варіант окремо
-    Object.keys(res).sort().forEach(variantKey => {
-      text += `${variantKey}:\n`;
-      const variantObj = res[variantKey];
-      Object.keys(variantObj).forEach(k => {
-        text += `• ${k}: ${variantObj[k]}\n`;
-      });
-      text += `\n`;
-    });
-  } else {
-    // Звичайний плоский список ресурсів
-    Object.keys(res).forEach(k => {
-      text += `• ${k}: ${res[k]}\n`;
-    });
-  }
-
-  document.getElementById('result').innerText = text;
-
-  // Показати запчастини, якщо предмет — зброя
-  if (allWeapons[item]) {
-    let partsText = 'Запчастини:\n\n';
-    for (const p in allWeapons[item]) partsText += `• ${p}: ${allWeapons[item][p]}\n`;
-    document.getElementById('parts').style.display='block';
-    document.getElementById('parts').innerText = partsText;
-  } else {
-    document.getElementById('parts').style.display='none';
-  }
-}
-
-// Меню
+// DOM
 const menu = document.getElementById('menu');
-const itemsDiv = document.getElementById('items');
+const items = document.getElementById('items');
+const summary = document.getElementById('summary');
+const qtyInput = document.getElementById('qty');
+const goldSelector = document.getElementById('goldSelector');
+const goldOption = document.getElementById('goldOption');
 
-menu.querySelectorAll('div').forEach(m=>{
-  m.onclick=()=>{
-    menu.querySelectorAll('div').forEach(x=>x.classList.remove('active'));
-    m.classList.add('active');
-    const cat = m.dataset.category;
+let currentCategory = '';
+let currentItem = '';
 
-    itemsDiv.innerHTML='';
-    const categoryData = weapons[cat] || {};
-    const keys = Object.keys(categoryData);
+// Хелпери
+const isPart = (name) => Object.prototype.hasOwnProperty.call(data.parts, name);
+const isIngot = (name) => Object.prototype.hasOwnProperty.call(data.ingots, name);
 
-    if (keys.length === 0) {
-      const d=document.createElement('div');
-      d.textContent='Немає елементів у цій категорії';
-      d.style.opacity='0.8';
-      itemsDiv.appendChild(d);
-    } else {
-      keys.forEach(item=>{
-        const d=document.createElement('div');
-        d.textContent=item;
-        d.onclick=()=>displayResources(item);
-        itemsDiv.appendChild(d);
-      });
+// Отримати рецепт з урахуванням варіанта золота
+function getRecipe(name) {
+  if (isPart(name)) return data.parts[name];
+  if (isIngot(name)) {
+    const r = data.ingots[name];
+    if (Array.isArray(r)) {
+      const idx = parseInt(goldOption.value) || 0;
+      return r[idx] || r[0];
     }
+    return r;
+  }
+  return null;
+}
 
-    document.getElementById('result').innerText='Виберіть предмет щоб побачити ресурси';
-    document.getElementById('parts').style.display='none';
-  };
+// Рекурсивне розгортання: базові (руда, дерево, допоміжні), злитки, компоненти
+function expand(name, count, base = {}, ingots = {}, components = {}) {
+  if (isPart(name)) {
+    components[name] = (components[name] || 0) + count;
+    const recipe = getRecipe(name);
+    for (const k in recipe) expand(k, recipe[k] * count, base, ingots, components);
+  } else if (isIngot(name)) {
+    ingots[name] = (ingots[name] || 0) + count;
+    const recipe = getRecipe(name);
+    for (const k in recipe) expand(k, recipe[k] * count, base, ingots, components);
+  } else {
+    base[name] = (base[name] || 0) + count;
+  }
+  return { base, ingots, components };
+}
+
+// Рендер предметів категорії
+function renderItems() {
+  items.innerHTML = '';
+  const catData = data[currentCategory] || {};
+  const keys = Object.keys(catData);
+  if (keys.length === 0) {
+    const d = document.createElement('div');
+    d.className = 'item';
+    d.textContent = 'Немає елементів у цій категорії';
+    d.style.opacity = '0.8';
+    items.appendChild(d);
+    return;
+  }
+  keys.forEach(itemName => {
+    const d = document.createElement('div');
+    d.className = 'item';
+    d.textContent = itemName;
+    d.addEventListener('click', () => {
+      currentItem = itemName;
+      items.querySelectorAll('.item').forEach(el => el.classList.remove('active-item'));
+      d.classList.add('active-item');
+      showSummary();
+    });
+    items.appendChild(d);
+  });
+}
+
+// Меню категорій
+menu.querySelectorAll('div').forEach(node => {
+  node.addEventListener('click', () => {
+    const cat = node.dataset.category;
+    if (!cat || !data[cat]) return;
+    currentCategory = cat;
+    menu.querySelectorAll('div').forEach(el => el.classList.remove('active'));
+    node.classList.add('active');
+    renderItems();
+    summary.innerHTML = 'Виберіть предмет';
+    goldSelector.style.display = 'none';
+  });
 });
 
-// Автовибір першої категорії для зручності
+// Основний вивід: Руда та дерево / Злитки / Компоненти
+function showSummary() {
+  const qty = parseInt(qtyInput.value) || 1;
+  const recipe = data[currentCategory][currentItem];
+  let base = {}, ingots = {}, components = {};
+
+  for (const k in recipe) {
+    expand(k, recipe[k] * qty, base, ingots, components);
+  }
+
+  // Показувати селектор золота, якщо у розрахунку є золото або обрано сам інгот золота
+  const usesGold = !!ingots["Злиток золота"] || currentItem === "Злиток золота";
+  goldSelector.style.display = usesGold ? 'inline-flex' : 'none';
+
+  // Формування виводу (HTML)
+  let html = `<b>${currentItem} × ${qty}</b><br><br>`;
+
+  // Руда та дерево
+  const oreKeys = Object.keys(base).filter(k =>
+    k.toLowerCase().includes('руда') || k.toLowerCase().includes('самородок') || k === 'Дерево'
+  ).sort();
+  const auxKeys = Object.keys(base).filter(k => !oreKeys.includes(k)).sort();
+
+  html += `<span class="section-title">Руда та дерево:</span><br>`;
+  if (oreKeys.length === 0) {
+    html += `• Немає<br>`;
+  } else {
+    oreKeys.forEach(k => { html += `• ${k}: ${base[k]}<br>`; });
+  }
+
+  if (auxKeys.length > 0) {
+    html += `<br><span class="section-title">Допоміжні базові:</span><br>`;
+    auxKeys.forEach(k => { html += `• ${k}: ${base[k]}<br>`; });
+  }
+
+  // Злитки
+  html += `<br><span class="section-title">Злитки:</span><br>`;
+  const ingKeys = Object.keys(ingots).sort();
+  if (ingKeys.length === 0) {
+    html += `• Немає<br>`;
+  } else {
+    ingKeys.forEach(k => { html += `• ${k}: ${ingots[k]}<br>`; });
+  }
+
+  // Компоненти
+  html += `<br><span class="section-title">Компоненти:</span><br>`;
+  const compKeys = Object.keys(components).sort();
+  if (compKeys.length === 0) {
+    html += `• Немає<br>`;
+  } else {
+    compKeys.forEach(k => { html += `• ${k}: ${components[k]}<br>`; });
+  }
+
+  // Рендер як HTML, щоб теги працювали
+  summary.innerHTML = html;
+}
+
+// Перерахунок при зміні кількості або варіанту золота
+qtyInput.addEventListener('input', () => { if (currentItem) showSummary(); });
+goldOption.addEventListener('change', () => { if (currentItem) showSummary(); });
+
+// Автовибір першої категорії для старту
 const first = menu.querySelector('div[data-category]');
 if (first) first.click();
 </script>
 </body>
 </html>
+
 
 
 
