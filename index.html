@@ -7,7 +7,8 @@
 <style>
 body {
   margin:0; padding:0; font-family:Arial,sans-serif;
-  background:url('background.png') no-repeat center center fixed; background-size:cover;
+  background:url('background.png') no-repeat center center fixed; 
+  background-size:cover;
   color:#fff;
 }
 .header {
@@ -89,7 +90,7 @@ const weapons = {
     "Злиток сталі": { "Злиток заліза":1, "Вугілля":5, "Глиняна форма":1 },
     "Злиток заліза": { "Залізна руда":10, "Вугілля":5, "Глиняна форма":1 },
     "Злиток золота": { "Золота руда":10, "Малий самородок":30, "Середній самородок":20, "Вугілля":5, "Глиняна форма":1 },
-    "Злиток срібла": { "Злиток срібла":1 },
+    "Злиток срібла": { "Срібна руда":10, "Вугілля":5, "Глиняна форма":1 },
     "Злиток міді": { "Мідна руда":10, "Вугілля":5, "Глиняна форма":1 },
     "Злиток свинцю": { "Свинцева руда":10, "Вугілля":5, "Глиняна форма":1 },
     "Злиток латуні": { "Злиток міді":1, "Злиток цинку":1, "Вугілля":5, "Глиняна форма":1 },
@@ -98,35 +99,34 @@ const weapons = {
   ammo: {}
 };
 
-// Показ ресурсів без розкриття “готових” предметів
+// РОЗГОРТАННЯ ресурсів (запчастини → злитки → руда)
 function getResources(item, qty=1, result={}) {
-  const allItems = {...weapons.parts, ...weapons.ingots};
-  if(allItems[item]){
-    for(let k in allItems[item]){
-      result[k]=(result[k]||0)+allItems[item][k]*qty;
+  const all = { ...weapons.parts, ...weapons.ingots };
+
+  if (all[item]) {
+    for (let k in all[item]) {
+      getResources(k, all[item][k] * qty, result);
     }
   } else {
-    result[item]=(result[item]||0)+qty;
+    result[item] = (result[item] || 0) + qty;
   }
+
   return result;
 }
 
-// Показ предмету і його запчастин
+// Відображення інформації
 function displayResources(item){
-  let text=`Ресурси на ${item}:\n\n`;
-  const resources = getResources(item);
-  for(let k in resources) text+=`• ${k}: ${resources[k]}\n`;
-  document.getElementById('result').innerText=text;
+  const res = getResources(item);
+  let text = `Ресурси на ${item}:\n\n`;
+  for (let k in res) text += `• ${k}: ${res[k]}\n`;
+  document.getElementById('result').innerText = text;
 
-  // Показ запчастин якщо це зброя
-  let partsText='';
-  const allWeapons = {...weapons.rifles,...weapons.shotguns,...weapons.revolvers,...weapons.repeaters};
-  if(allWeapons[item]){
-    for(let p in allWeapons[item]){
-      partsText+=`• ${p}: ${allWeapons[item][p]}\n`;
-    }
+  const allWeapons = { ...weapons.rifles, ...weapons.shotguns, ...weapons.revolvers, ...weapons.repeaters };
+  if (allWeapons[item]) {
+    let partsText = 'Запчастини:\n\n';
+    for (let p in allWeapons[item]) partsText += `• ${p}: ${allWeapons[item][p]}\n`;
     document.getElementById('parts').style.display='block';
-    document.getElementById('parts').innerText='Запчастини:\n\n'+partsText;
+    document.getElementById('parts').innerText = partsText;
   } else {
     document.getElementById('parts').style.display='none';
   }
@@ -140,13 +140,15 @@ menu.querySelectorAll('div').forEach(m=>{
     menu.querySelectorAll('div').forEach(x=>x.classList.remove('active'));
     m.classList.add('active');
     const cat = m.dataset.category;
+
     itemsDiv.innerHTML='';
     for(let item in weapons[cat]){
-      const d = document.createElement('div');
+      const d=document.createElement('div');
       d.textContent=item;
       d.onclick=()=>displayResources(item);
       itemsDiv.appendChild(d);
     }
+
     document.getElementById('result').innerText='Виберіть предмет щоб побачити ресурси';
     document.getElementById('parts').style.display='none';
   }
@@ -154,6 +156,7 @@ menu.querySelectorAll('div').forEach(m=>{
 </script>
 </body>
 </html>
+
 
 
 
