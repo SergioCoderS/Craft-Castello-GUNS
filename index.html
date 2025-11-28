@@ -5,167 +5,129 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Castello Craft Calculator</title>
 <style>
-body { margin:0; padding:0; font-family:Arial,sans-serif; background:url('background.png') no-repeat center center fixed; background-size:cover; }
-.overlay { background: rgba(0,0,0,0.55); min-height:100vh; display:flex; justify-content:center; align-items:center; padding:20px; }
-.calculator { background: rgba(0,0,0,0.65); backdrop-filter: blur(10px); padding:20px; border-radius:15px; width:100%; max-width:700px; color:#fff; box-shadow:0 0 25px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.2); }
-h2 { text-align:center; margin-bottom:20px; color:#ffe6a7; text-shadow:0 0 5px #000; font-size:24px; }
-.custom-select { position:relative; margin:10px 0; width:100%; }
-.select-selected { background: rgba(0,0,0,0.7); color:#fff; padding:12px; border-radius:8px; cursor:pointer; user-select:none; position:relative; transition:background 0.2s; }
-.select-selected::after { content:""; position:absolute; top:50%; right:12px; width:0; height:0; border:6px solid transparent; border-top-color:#fff; transform:translateY(-50%); transition:transform 0.3s; }
-.select-selected.active::after { transform:translateY(-50%) rotate(180deg); }
-.select-items { position:absolute; background: rgba(0,0,0,0.85); top:100%; left:0; right:0; z-index:99; border-radius:8px; overflow-y:auto; max-height:250px; display:none; opacity:0; transition:opacity 0.3s; }
-.select-items.show { display:block; opacity:1; }
-.select-items div { padding:12px; cursor:pointer; color:#fff; transition:background 0.2s; }
-.select-items div:hover { background: rgba(255,255,255,0.2); }
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th, td { border:1px solid rgba(255,255,255,0.3); padding:8px; text-align:left; }
-th { background: rgba(255,255,255,0.1); }
-.detail { background: rgba(255,200,100,0.2); }
-.ingot { background: rgba(100,200,255,0.2); }
-.resource { background: rgba(150,255,150,0.2); }
+body {
+  margin:0; padding:0; font-family:Arial,sans-serif;
+  background:url('background.png') no-repeat center center fixed; background-size:cover;
+  color:#fff;
+}
+.container { display:flex; min-height:100vh; }
+.menu {
+  width:200px; background: rgba(0,0,0,0.7); padding:20px; box-sizing:border-box;
+  display:flex; flex-direction:column;
+}
+.menu div { padding:12px; margin-bottom:5px; background: rgba(255,255,255,0.05); cursor:pointer; border-radius:5px; transition:0.2s; }
+.menu div:hover, .menu .active { background: rgba(255,255,255,0.2); }
+.content { flex:1; padding:20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+.items { margin-top:10px; }
+.items div { padding:10px; margin-bottom:5px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:5px; transition:0.2s; }
+.items div:hover { background: rgba(255,255,255,0.2); }
+.result { margin-top:15px; background: rgba(0,0,0,0.35); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
 </style>
 </head>
 <body>
-<div class="overlay">
-  <div class="calculator">
-    <h2>Castello Craft Calculator</h2>
-
-    <div class="section">
-      <label>Оберіть зброю:</label>
-      <div class="custom-select" id="weaponSelect"></div>
-      <div id="weaponTable"></div>
-    </div>
-
-    <div class="section">
-      <label>Оберіть злиток:</label>
-      <div class="custom-select" id="ingotSelect"></div>
-      <div id="ingotTable"></div>
-    </div>
+<div class="container">
+  <div class="menu" id="menu">
+    <div data-category="revolvers">Револьвери</div>
+    <div data-category="rifles">Гвинтівки</div>
+    <div data-category="repeaters">Ріпітери</div>
+    <div data-category="shotguns">Дробовики</div>
+    <div data-category="ingots">Злитки</div>
+    <div data-category="parts">Запчастини</div>
+    <div data-category="ammo">Набої</div>
+  </div>
+  <div class="content">
+    <div class="items" id="items"></div>
+    <div class="result" id="result">Виберіть предмет щоб побачити ресурси</div>
   </div>
 </div>
 
 <script>
-// --- Дані зброї ---
+// --- Дані ---
 const weapons = {
-  "Гвинтівка Boltaction": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":25, "Злиток сталі":4 },
-  "Гвинтівка Springfield": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":20, "Злиток сталі":4 },
-  "Дробовик Double Barrel": { "Корпус важкої зброї":1, "Дуло":2, "Дерево":5, "Злиток сталі":3 },
-  "Дробовик Repeating": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":5, "Злиток сталі":2 },
-  "Дробовик Semi-Auto": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":5, "Злиток сталі":2 },
-  "Револьвер Cattleman": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
-  "Револьвер Double Action": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
-  "Револьвер Double Action Gambler": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
-  "Револьвер Lemat": { "Корпус легкої зброї":1, "Дуло":2, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
-  "Револьвер Navy": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":3, "Злиток золота":1, "Злиток срібла":1 },
-  "Револьвер Shofield": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
-  "Ріпітер Carbine": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":5, "Злиток сталі":3 },
-  "Ріпітер Evans": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":10, "Злиток сталі":3 },
-  "Ріпітер Lancaster": { "Корпус важкої зброї":1, "Дуло":2, "Дерево":5, "Злиток сталі":3 },
-  "Ріпітер Litchfield": { "Корпус важкої зброї":1, "Дуло":2, "Дерево":5, "Злиток сталі":3 }
+  rifles: {
+    "Гвинтівка Boltaction": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":25, "Злиток сталі":4 },
+    "Гвинтівка Springfield": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":20, "Злиток сталі":4 }
+  },
+  shotguns: {
+    "Дробовик Double Barrel": { "Корпус важкої зброї":1, "Дуло":2, "Дерево":5, "Злиток сталі":3 },
+    "Дробовик Repeating": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":5, "Злиток сталі":2 },
+    "Дробовик Semi-Auto": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":5, "Злиток сталі":2 }
+  },
+  revolvers: {
+    "Cattleman": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
+    "Double Action": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
+    "Double Action Gambler": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
+    "Lemat": { "Корпус легкої зброї":1, "Дуло":2, "Барабан":1, "Дерево":1, "Злиток сталі":2 },
+    "Navy": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":3, "Злиток золота":1, "Злиток срібла":1 },
+    "Shofield": { "Корпус легкої зброї":1, "Дуло":1, "Барабан":1, "Дерево":1, "Злиток сталі":2 }
+  },
+  repeaters: {
+    "Carbine": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":5, "Злиток сталі":3 },
+    "Evans": { "Корпус важкої зброї":1, "Дуло":1, "Дерево":10, "Злиток сталі":3 },
+    "Lancaster": { "Корпус важкої зброї":1, "Дуло":2, "Дерево":5, "Злиток сталі":3 },
+    "Litchfield": { "Корпус важкої зброї":1, "Дуло":2, "Дерево":5, "Злиток сталі":3 }
+  },
+  parts: {
+    "Корпус важкої зброї": { "Злиток заліза":2, "Злиток сталі":2, "Дерево":10 },
+    "Корпус легкої зброї": { "Злиток заліза":1, "Злиток сталі":1, "Дерево":5 },
+    "Барабан": { "Злиток сталі":1 },
+    "Дуло": { "Злиток сталі":1 }
+  },
+  ingots: {
+    "Злиток сталі": { "Злиток заліза":1, "Вугілля":5, "Глиняна форма":1 },
+    "Злиток заліза": { "Залізна руда":10 },
+    "Злиток золота": { "Золота руда":10, "Вугілля":5, "Глиняна форма":1 },
+    "Злиток срібла": { "Срібна руда":10, "Вугілля":5, "Глиняна форма":1 },
+    "Злиток міді": { "Мідна руда":10, "Вугілля":5, "Глиняна форма":1 },
+    "Злиток свинцю": { "Свинцева руда":10, "Вугілля":5, "Глиняна форма":1 },
+    "Злиток латуні": { "Злиток міді":1, "Злиток цинку":1, "Вугілля":5, "Глиняна форма":1 },
+    "Злиток цинку": { "Цинкова руда":10, "Вугілля":5, "Глиняна форма":1 }
+  },
+  ammo: {}
 };
-
-// --- Деталі ---
-const parts = {
-  "Корпус важкої зброї": { "Злиток заліза":2, "Злиток сталі":2, "Дерево":10 },
-  "Корпус легкої зброї": { "Злиток заліза":1, "Злиток сталі":1, "Дерево":5 },
-  "Барабан": { "Злиток сталі":1 },
-  "Дуло": { "Злиток сталі":1 }
-};
-
-// --- Злитки ---
-const ingots = {
-  "Злиток сталі": { "Злиток заліза":1, "Вугілля":5, "Глиняна форма":1 },
-  "Злиток заліза": { "Залізна руда":10 },
-  "Злиток золота": { "Золота руда":10, "Вугілля":5, "Глиняна форма":1 },
-  "Злиток срібла": { "Срібна руда":10, "Вугілля":5, "Глиняна форма":1 },
-  "Злиток міді": { "Мідна руда":10, "Вугілля":5, "Глиняна форма":1 },
-  "Злиток свинцю": { "Свинцева руда":10, "Вугілля":5, "Глиняна форма":1 },
-  "Злиток латуні": { "Злиток міді":1, "Злиток цинку":1, "Вугілля":5, "Глиняна форма":1 },
-  "Злиток цинку": { "Цинкова руда":10, "Вугілля":5, "Глиняна форма":1 }
-};
-
-// --- Класифікація ---
-function getType(name){ if(parts[name]) return 'detail'; if(ingots[name]) return 'ingot'; return 'resource'; }
 
 // --- Рекурсивний підрахунок ---
-function getResources(item, qty, result={}){
-  if(parts[item]){
-    for(let sub in parts[item]){
-      const total=parts[item][sub]*qty;
-      result[sub]=(result[sub]||0)+total;
-      getResources(sub,total,result);
-    }
-  } else if(ingots[item]){
-    for(let sub in ingots[item]){
-      const total=ingots[item][sub]*qty;
-      result[sub]=(result[sub]||0)+total;
-      getResources(sub,total,result);
-    }
+function getResources(item, qty=1, result={}){
+  if(weapons.revolvers[item] || weapons.rifles[item] || weapons.repeaters[item] || weapons.shotguns[item]) {
+    const obj = weapons.revolvers[item] || weapons.rifles[item] || weapons.repeaters[item] || weapons.shotguns[item];
+    for(let k in obj) getResources(k,obj[k]*qty,result);
+  } else if(weapons.parts[item] || weapons.ingots[item]){
+    const obj = weapons.parts[item] || weapons.ingots[item];
+    for(let k in obj) getResources(k,obj[k]*qty,result);
   } else {
     result[item]=(result[item]||0)+qty;
   }
   return result;
 }
 
-// --- Таблиця ---
-function generateTable(resources){
-  let html='<table><tr><th>Ресурс</th><th>Кількість</th></tr>';
-  for(let key in resources){
-    const cls=getType(key);
-    html+=`<tr class="${cls}"><td>${key}</td><td>${Math.round(resources[key]*100)/100}</td></tr>`;
-  }
-  html+='</table>';
-  return html;
-}
-
 // --- Показ ---
-function displayWeaponResources(name){
-  const total={};
-  const weapon=weapons[name];
-  for(let item in weapon) getResources(item, weapon[item], total);
-  document.getElementById('weaponTable').innerHTML=generateTable(total);
-}
-function displayIngotResources(name){
-  const total=getResources(name,1);
-  document.getElementById('ingotTable').innerHTML=generateTable(total);
+function displayResources(item){
+  const total = getResources(item);
+  let text=`Ресурси на ${item}:\n\n`;
+  for(let k in total) text+=`• ${k}: ${total[k]}\n`;
+  document.getElementById('result').innerText=text;
 }
 
-// --- Кастомний select ---
-function createCustomSelect(container, options, callback){
-  const selected=document.createElement('div');
-  selected.className='select-selected';
-  selected.textContent=Object.keys(options)[0];
-  container.appendChild(selected);
-
-  const items=document.createElement('div');
-  items.className='select-items';
-  for(let key in options){
-    const option=document.createElement('div');
-    option.textContent=key;
-    option.onclick=function(){
-      selected.textContent=this.textContent;
-      items.classList.remove('show');
-      selected.classList.remove('active');
-      callback(this.textContent);
+// --- Меню ---
+const menu = document.getElementById('menu');
+const itemsDiv = document.getElementById('items');
+menu.querySelectorAll('div').forEach(m=>{
+  m.onclick=()=>{
+    menu.querySelectorAll('div').forEach(x=>x.classList.remove('active'));
+    m.classList.add('active');
+    const cat = m.dataset.category;
+    itemsDiv.innerHTML='';
+    for(let item in weapons[cat]){
+      const d=document.createElement('div');
+      d.textContent=item;
+      d.onclick=()=>displayResources(item);
+      itemsDiv.appendChild(d);
     }
-    items.appendChild(option);
+    document.getElementById('result').innerText='Виберіть предмет щоб побачити ресурси';
   }
-  container.appendChild(items);
-
-  selected.onclick=function(e){
-    e.stopPropagation();
-    const open=items.classList.contains('show');
-    document.querySelectorAll('.select-items').forEach(i=>i.classList.remove('show'));
-    document.querySelectorAll('.select-selected').forEach(s=>s.classList.remove('active'));
-    if(!open){ items.classList.add('show'); selected.classList.add('active'); }
-  }
-  document.addEventListener('click',()=>{ items.classList.remove('show'); selected.classList.remove('active'); });
-  callback(selected.textContent);
-}
-
-// --- Ініціалізація ---
-createCustomSelect(document.getElementById('weaponSelect'), weapons, displayWeaponResources);
-createCustomSelect(document.getElementById('ingotSelect'), ingots, displayIngotResources);
+});
 </script>
 </body>
 </html>
+
+
