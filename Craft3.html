@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Castello Craft Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+    .calculator {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 450px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      margin-top: 20px;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      white-space: pre-line;
+    }
+    .section {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h2>Castello Craft Calculator</h2>
+
+    <div class="section">
+      <label>Оберіть зброю:</label>
+      <select id="weaponSelect">
+        <option value="bolt">Bolt Action</option>
+      </select>
+      <button id="weaponButton">Покажи ресурси на зброю</button>
+      <div class="result" id="weaponResult"></div>
+    </div>
+
+    <div class="section">
+      <label>Оберіть злиток / проміжний матеріал:</label>
+      <select id="ingotSelect">
+        <option value="iron">Злиток заліза</option>
+        <option value="steel">Злиток сталі</option>
+        <option value="clayForm">Глиняна форма</option>
+      </select>
+      <button id="ingotButton">Покажи ресурси на злиток</button>
+      <div class="result" id="ingotResult"></div>
+    </div>
+  </div>
+
+  <script>
+    let weaponVisible = false;
+    let ingotVisible = false;
+
+    document.getElementById('weaponButton').addEventListener('click', function() {
+      const weapon = document.getElementById('weaponSelect').value;
+      const resultDiv = document.getElementById('weaponResult');
+
+      if (weaponVisible) {
+        resultDiv.innerText = '';
+        weaponVisible = false;
+        return;
+      }
+
+      let text = '';
+      if (weapon === 'bolt') {
+        text += '🪓 Ресурси на зброю:\n';
+        text += '- Корпус: 1 шт\n';
+        text += '- Дуло: 1 шт\n';
+        text += '- Дерево: 35\n';
+        text += '- Шурупи: 20\n';
+        text += '- Пружини: 3\n';
+        text += '- Злитки заліза: 11\n';
+        text += '- Злитки сталі: 7\n';
+        text += '- Залізна руда: 110\n';
+        text += '- Вугілля: 180\n';
+        text += '- Глина: 90\n';
+      }
+
+      resultDiv.innerText = text;
+      weaponVisible = true;
+    });
+
+    document.getElementById('ingotButton').addEventListener('click', function() {
+      const ingot = document.getElementById('ingotSelect').value;
+      const resultDiv = document.getElementById('ingotResult');
+
+      if (ingotVisible) {
+        resultDiv.innerText = '';
+        ingotVisible = false;
+        return;
+      }
+
+      let text = '';
+      if (ingot === 'iron') {
+        text += '⚙️ Ресурси на Злиток заліза:\n';
+        text += '- Залізна руда: 10\n';
+        text += '- Вугілля: 5\n';
+        text += '- Глиняна форма: 1\n';
+      } else if (ingot === 'steel') {
+        text += '⚙️ Ресурси на Злиток сталі:\n';
+        text += '- Злиток заліза: 1\n';
+        text += '- Вугілля: 5\n';
+        text += '- Глиняна форма: 1\n';
+      } else if (ingot === 'clayForm') {
+        text += '⚙️ Ресурси на Глиняну форму:\n';
+        text += '- Глина: 5\n';
+        text += '- Вугілля: 5\n';
+      }
+
+      resultDiv.innerText = text;
+      ingotVisible = true;
+    });
+  </script>
+</body>
+</html>
