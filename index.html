@@ -1,162 +1,151 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Castello Craft Calculator</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: url('background.png') no-repeat center center fixed;
-      background-size: cover;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Castello Craft Calculator</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: url('background.png') no-repeat center center fixed;
+    background-size: cover;
+  }
 
-    .overlay {
-      background: rgba(0, 0, 0, 0.55);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
+  .overlay {
+    background: rgba(0, 0, 0, 0.55);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
 
-    .calculator {
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(10px);
-      padding: 20px;
-      border-radius: 15px;
-      width: 100%;
-      max-width: 450px;
-      color: #fff;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
+  .calculator {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 450px;
+    color: #fff;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #ffe6a7;
-      text-shadow: 0 0 5px #000;
-      font-size: 24px;
-    }
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffe6a7;
+    text-shadow: 0 0 5px #000;
+    font-size: 24px;
+  }
 
-    select,
-    button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-    }
+  .custom-select {
+    position: relative;
+    margin: 10px 0;
+    width: 100%;
+  }
 
-    select {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
+  .select-selected {
+    background: rgba(0, 0, 0, 0.6); /* темний фон для видимості тексту */
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
 
-    button {
-      background-color: #c79a3b;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+  .select-items {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85); /* менш прозорий фон */
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    border-radius: 8px;
+    overflow-y: auto;
+    max-height: 200px; /* обмежує висоту списку */
+    display: none;
+  }
 
-    button:hover {
-      background-color: #eaba57;
-    }
+  .select-items div {
+    padding: 12px;
+    cursor: pointer;
+    color: #fff; /* білий текст */
+    transition: background 0.2s;
+  }
 
-    .result {
-      margin-top: 15px;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      white-space: pre-line;
-      color: #fff;
-      font-size: 15px;
-    }
-  </style>
+  .select-items div:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    background-color: #c79a3b;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background-color: #eaba57;
+  }
+
+  .result {
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    white-space: pre-line;
+    color: #fff;
+    font-size: 15px;
+  }
+</style>
 </head>
 <body>
-  <div class="overlay">
-    <div class="calculator">
-      <h2>Castello Craft Calculator</h2>
+<div class="overlay">
+  <div class="calculator">
+    <h2>Castello Craft Calculator</h2>
 
-      <div class="section">
-        <label>Оберіть зброю:</label>
-        <select id="weaponSelect"></select>
-        <button id="weaponButton">Показати ресурси</button>
-        <div class="result" id="weaponResult"></div>
-      </div>
+    <div class="section">
+      <label>Оберіть зброю:</label>
+      <div class="custom-select" id="weaponSelect"></div>
+      <button id="weaponButton">Показати ресурси</button>
+      <div class="result" id="weaponResult"></div>
+    </div>
 
-      <div class="section">
-        <label>Оберіть злиток:</label>
-        <select id="ingotSelect"></select>
-        <button id="ingotButton">Показати ресурси</button>
-        <div class="result" id="ingotResult"></div>
-      </div>
+    <div class="section">
+      <label>Оберіть злиток:</label>
+      <div class="custom-select" id="ingotSelect"></div>
+      <button id="ingotButton">Показати ресурси</button>
+      <div class="result" id="ingotResult"></div>
     </div>
   </div>
+</div>
 
-  <script>
-    const weapons = {
-      "Гвинтівка Bolt Action": {
-        "Корпус важкої зброї": 1,
-        "Дуло": 1,
-        "Дерево": 35,
-        "Шуруп": 20,
-        "Пружина": 3,
-        "Злиток заліза": 11,
-        "Злиток сталі": 7,
-        "Залізна руда": 110,
-        "Вугілля": 180,
-        "Глина": 90
-      },
-      "Гвинтівка Springfield": {
-        "Корпус важкої зброї": 1,
-        "Дуло": 1,
-        "Дерево": 20,
-        "Шуруп": 10,
-        "Пружина": 3,
-        "Злиток сталі": 4
-      },
-      "Дробовик Double Barrel": {
-        "Корпус важкої зброї": 1,
-        "Дуло": 2,
-        "Дерево": 5,
-        "Шуруп": 20,
-        "Пружина": 2,
-        "Злиток сталі": 3
-      },
-      "Дробовик Repeating": {
-        "Корпус важкої зброї": 1,
-        "Дуло": 1,
-        "Дерево": 5,
-        "Шуруп": 15,
-        "Пружина": 2,
-        "Злиток сталі": 2
-      },
-      "Дробовик Semi-Auto": {
-        "Корпус важкої зброї": 1,
-        "Дуло": 1,
-        "Дерево": 5,
-        "Шуруп": 15,
-        "Пружина": 2,
-        "Злиток сталі": 2,
-        "Злиток срібла": 2,
-        "Злиток золота": 2
-      }
-    };
+<script>
+const weapons = {
+  "Гвинтівка Bolt Action": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 35, "Шуруп": 20, "Пружина": 3, "Злиток заліза": 11, "Злиток сталі": 7, "Залізна руда": 110, "Вугілля": 180, "Глина": 90 },
+  "Гвинтівка Springfield": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 20, "Шуруп": 10, "Пружина": 3, "Злиток сталі": 4 },
+  "Дробовик Double Barrel": { "Корпус важкої зброї": 1, "Дуло": 2, "Дерево": 5, "Шуруп": 20, "Пружина": 2, "Злиток сталі": 3 },
+  "Дробовик Repeating": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 5, "Шуруп": 15, "Пружина": 2, "Злиток сталі": 2 },
+  "Дробовик Semi-Auto": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 5, "Шуруп": 15, "Пружина": 2, "Злиток сталі": 2, "Злиток срібла": 2, "Злиток золота": 2 }
+};
 
-    const ingots = {
-      "Злиток заліза": "- Залізна руда: 10\n- Вугілля: 5\n- Глиняна форма: 1",
-      "Злиток сталі": "- Злиток заліза: 1\n- Вугілля: 5\n- Глиняна форма: 1",
-      "Глиняна форма": "- Глина: 5\n- Вугілля: 5",
-      "Злиток золота": `- 10 золотої руди
+const ingots = {
+  "Злиток заліза": "- Залізна руда: 10\n- Вугілля: 5\n- Глиняна форма: 1",
+  "Злиток сталі": "- Злиток заліза: 1\n- Вугілля: 5\n- Глиняна форма: 1",
+  "Глиняна форма": "- Глина: 5\n- Вугілля: 5",
+  "Злиток золота": `- 10 золотої руди
 АБО
 - 10 великих самородків
 АБО
@@ -166,35 +155,50 @@
 
 + Вугілля: 5
 + Глиняна форма: 1`
+};
+
+function createCustomSelect(container, options) {
+  const selected = document.createElement('div');
+  selected.className = 'select-selected';
+  selected.textContent = Object.keys(options)[0];
+  container.appendChild(selected);
+
+  const items = document.createElement('div');
+  items.className = 'select-items';
+  for (let key in options) {
+    const option = document.createElement('div');
+    option.textContent = key;
+    option.onclick = function() {
+      selected.textContent = this.textContent;
+      items.style.display = 'none';
     };
+    items.appendChild(option);
+  }
+  container.appendChild(items);
 
-    const weaponSelect = document.getElementById("weaponSelect");
-    for (let w in weapons) {
-      let opt = document.createElement("option");
-      opt.value = w;
-      opt.textContent = w;
-      weaponSelect.append(opt);
-    }
+  selected.onclick = function(e) {
+    e.stopPropagation();
+    items.style.display = items.style.display === 'block' ? 'none' : 'block';
+  };
 
-    const ingotSelect = document.getElementById("ingotSelect");
-    for (let i in ingots) {
-      let opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = i;
-      ingotSelect.append(opt);
-    }
+  document.addEventListener('click', () => items.style.display = 'none');
+  return selected;
+}
 
-    document.getElementById("weaponButton").onclick = () => {
-      const w = weaponSelect.value;
-      let text = `🛠 Ресурси на ${w}:\n\n`;
-      for (let k in weapons[w]) text += `• ${k}: ${weapons[w][k]}\n`;
-      document.getElementById("weaponResult").innerText = text;
-    };
+const weaponSelected = createCustomSelect(document.getElementById('weaponSelect'), weapons);
+const ingotSelected = createCustomSelect(document.getElementById('ingotSelect'), ingots);
 
-    document.getElementById("ingotButton").onclick = () => {
-      const i = ingotSelect.value;
-      document.getElementById("ingotResult").innerText = `⚙️ Ресурси на ${i}:\n\n${ingots[i]}`;
-    };
-  </script>
+document.getElementById('weaponButton').onclick = () => {
+  const w = weaponSelected.textContent;
+  let text = `🛠 Ресурси на ${w}:\n\n`;
+  for (let k in weapons[w]) text += `• ${k}: ${weapons[w][k]}\n`;
+  document.getElementById('weaponResult').innerText = text;
+};
+
+document.getElementById('ingotButton').onclick = () => {
+  const i = ingotSelected.textContent;
+  document.getElementById('ingotResult').innerText = `⚙️ Ресурси на ${i}:\n\n${ingots[i]}`;
+};
+</script>
 </body>
 </html>
