@@ -5,118 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Castello Craft Calculator</title>
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background: url('background.png') no-repeat center center fixed;
-    background-size: cover;
-  }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: url('background.png') no-repeat center center fixed;
+  background-size: cover;
+}
 
-  .overlay {
-    background: rgba(0, 0, 0, 0.55);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-  }
+.overlay {
+  background: rgba(0,0,0,0.55);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
 
-  .calculator {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    padding: 20px;
-    border-radius: 15px;
-    width: 100%;
-    max-width: 500px;
-    color: #fff;
-    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
+.calculator {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 500px;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.2);
+}
 
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #ffe6a7;
-    text-shadow: 0 0 5px #000;
-    font-size: 24px;
-  }
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ffe6a7;
+  text-shadow: 0 0 5px #000;
+  font-size: 24px;
+}
 
-  .custom-select {
-    position: relative;
-    margin: 10px 0;
-    width: 100%;
-  }
+.custom-select {
+  position: relative;
+  margin: 10px 0;
+  width: 100%;
+}
 
-  .select-selected {
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-    transition: background 0.2s;
-  }
+.select-selected {
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: background 0.2s;
+}
 
-  .select-selected::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    width: 0;
-    height: 0;
-    border: 6px solid transparent;
-    border-top-color: #fff;
-    transform: translateY(-50%);
-    transition: transform 0.3s;
-  }
+.select-selected::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-top-color: #fff;
+  transform: translateY(-50%);
+  transition: transform 0.3s;
+}
 
-  .select-selected.active::after {
-    transform: translateY(-50%) rotate(180deg);
-  }
+.select-selected.active::after {
+  transform: translateY(-50%) rotate(180deg);
+}
 
-  .select-items {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.85);
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 99;
-    border-radius: 8px;
-    overflow-y: auto;
-    max-height: 200px;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
+.select-items {
+  position: absolute;
+  background: rgba(0,0,0,0.85);
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  border-radius: 8px;
+  overflow-y: auto;
+  max-height: 200px;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
 
-  .select-items.show {
-    display: block;
-    opacity: 1;
-  }
+.select-items.show {
+  display: block;
+  opacity: 1;
+}
 
-  .select-items div {
-    padding: 12px;
-    cursor: pointer;
-    color: #fff;
-    transition: background 0.2s;
-  }
+.select-items div {
+  padding: 12px;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.2s;
+}
 
-  .select-items div:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
+.select-items div:hover {
+  background: rgba(255,255,255,0.2);
+}
 
-  .result {
-    margin-top: 15px;
-    background: rgba(0, 0, 0, 0.35);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    white-space: pre-line;
-    color: #fff;
-    font-size: 15px;
-  }
+.result {
+  margin-top: 15px;
+  background: rgba(0,0,0,0.35);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  white-space: pre-line;
+  color: #fff;
+  font-size: 15px;
+}
 </style>
 </head>
 <body>
@@ -139,72 +139,82 @@
 </div>
 
 <script>
+// Дані зброї з гри
 const weapons = {
-  "Гвинтівка Bolt Action": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 35, "Шуруп": 20, "Пружина": 3, "Злиток заліза": 11, "Злиток сталі": 7, "Залізна руда": 110, "Вугілля": 180, "Глина": 90 },
-  "Гвинтівка Springfield": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 20, "Шуруп": 10, "Пружина": 3, "Злиток сталі": 4 },
-  "Дробовик Double Barrel": { "Корпус важкої зброї": 1, "Дуло": 2, "Дерево": 5, "Шуруп": 20, "Пружина": 2, "Злиток сталі": 3 },
-  "Дробовик Repeating": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 5, "Шуруп": 15, "Пружина": 2, "Злиток сталі": 2 },
-  "Дробовик Semi-Auto": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 5, "Шуруп": 15, "Пружина": 2, "Злиток сталі": 2, "Злиток срібла": 2, "Злиток золота": 2 }
+  "Гвинтівка Bolt Action": {
+    "Корпус важкої зброї": 1,
+    "Дуло": 1,
+    "Дерево": 25,
+    "Шуруп": 10,
+    "Пружина": 3,
+    "Злиток сталі": 4
+  },
+  "Гвинтівка Springfield": {
+    "Корпус важкої зброї": 1,
+    "Дуло": 1,
+    "Дерево": 20,
+    "Шуруп": 10,
+    "Пружина": 3,
+    "Злиток сталі": 4
+  }
 };
 
+// Данні для злитків
 const ingots = {
-  "Злиток заліза": { "Залізна руда": 10, "Вугілля": 5, "Глиняна форма": 1 },
-  "Злиток сталі": { "Злиток заліза": 1, "Вугілля": 5, "Глиняна форма": 1 },
+  "Злиток сталі": { "Злиток заліза": 1, "Вугілля": 5 },
+  "Злиток заліза": { "Залізна руда": 10 },
   "Глиняна форма": { "Глина": 5, "Вугілля": 5 },
   "Злиток золота": { "Золота руда": 10, "Вугілля": 5, "Глиняна форма": 1 }
 };
 
-// Функція для рекурсивного підрахунку ресурсів
-function getResources(item, quantity, result = {}) {
+// Рекурсивний підрахунок ресурсів
+function getResources(item, qty, result = {}) {
   if(ingots[item]){
     for(let sub in ingots[item]){
-      const total = ingots[item][sub] * quantity;
+      const total = ingots[item][sub] * qty;
       result[sub] = (result[sub] || 0) + total;
       if(ingots[sub]){
         getResources(sub, total, result);
       }
     }
   } else {
-    result[item] = (result[item] || 0) + quantity;
+    result[item] = (result[item] || 0) + qty;
   }
   return result;
 }
 
-// Функція для виводу результатів зброї
-function displayWeaponResources(weaponName){
-  const weapon = weapons[weaponName];
-  let text = `🛠 Ресурси на ${weaponName}:\n\n`;
-  let totalResources = {};
+// Показ ресурсів для зброї
+function displayWeaponResources(name){
+  const weapon = weapons[name];
+  let total = {};
 
-  // обробляємо злитки окремо
   for(let item in weapon){
     const qty = weapon[item];
     if(ingots[item]){
-      getResources(item, qty, totalResources);
+      getResources(item, qty, total);
     } else {
-      totalResources[item] = (totalResources[item] || 0) + qty;
+      total[item] = (total[item] || 0) + qty;
     }
   }
 
-  // Вивід
-  for(let res in totalResources){
-    text += `• ${res}: ${totalResources[res]}\n`;
+  let text = `🛠 Ресурси на ${name}:\n\n`;
+  for(let res in total){
+    text += `• ${res}: ${total[res]}\n`;
   }
-
   document.getElementById('weaponResult').innerText = text;
 }
 
-// Вивід ресурсів для злитків
-function displayIngotResources(ingotName){
-  let text = `⚙️ Ресурси на ${ingotName}:\n\n`;
-  let totalResources = getResources(ingotName, 1);
-  for(let res in totalResources){
-    text += `• ${res}: ${totalResources[res]}\n`;
+// Показ ресурсів для злитків
+function displayIngotResources(name){
+  const total = getResources(name, 1);
+  let text = `⚙️ Ресурси на ${name}:\n\n`;
+  for(let res in total){
+    text += `• ${res}: ${total[res]}\n`;
   }
   document.getElementById('ingotResult').innerText = text;
 }
 
-// Кастомний select
+// Створення кастомного select
 function createCustomSelect(container, options, callback){
   const selected = document.createElement('div');
   selected.className = 'select-selected';
@@ -242,13 +252,14 @@ function createCustomSelect(container, options, callback){
     selected.classList.remove('active');
   });
 
-  callback(selected.textContent); // початковий показ
+  callback(selected.textContent);
 }
 
 // Ініціалізація
 createCustomSelect(document.getElementById('weaponSelect'), weapons, displayWeaponResources);
 createCustomSelect(document.getElementById('ingotSelect'), ingots, displayIngotResources);
-
 </script>
 </body>
 </html>
+
+
