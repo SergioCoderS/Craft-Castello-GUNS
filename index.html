@@ -139,27 +139,17 @@ h2 {
 </div>
 
 <script>
-// Дані зброї з гри
+// Дані зброї
 const weapons = {
-  "Гвинтівка Bolt Action": {
-    "Корпус важкої зброї": 1,
-    "Дуло": 1,
-    "Дерево": 25,
-    "Шуруп": 10,
-    "Пружина": 3,
-    "Злиток сталі": 4
-  },
-  "Гвинтівка Springfield": {
-    "Корпус важкої зброї": 1,
-    "Дуло": 1,
-    "Дерево": 20,
-    "Шуруп": 10,
-    "Пружина": 3,
-    "Злиток сталі": 4
-  }
+  "Гвинтівка Bolt Action": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 25, "Шуруп": 10, "Пружина": 3, "Злиток сталі": 4 },
+  "Гвинтівка Springfield": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 20, "Шуруп": 10, "Пружина": 3, "Злиток сталі": 4 },
+  "Дробовик Repeating": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 20, "Шуруп": 10, "Пружина": 3, "Злиток сталі": 3 },
+  "Дробовик Pump-Action": { "Корпус важкої зброї": 1, "Дуло": 1, "Дерево": 25, "Шуруп": 10, "Пружина": 3, "Злиток сталі": 4 },
+  "Дробовик Double-Barrel": { "Корпус важкої зброї": 1, "Дуло": 2, "Дерево": 20, "Шуруп": 8, "Пружина": 2, "Злиток сталі": 3 },
+  "Дробовик Sawed-Off": { "Корпус легкої зброї": 1, "Дуло": 1, "Дерево": 10, "Шуруп": 6, "Пружина": 1, "Злиток сталі": 2 }
 };
 
-// Данні для злитків
+// Дані для злитків
 const ingots = {
   "Злиток сталі": { "Злиток заліза": 1, "Вугілля": 5 },
   "Злиток заліза": { "Залізна руда": 10 },
@@ -168,13 +158,13 @@ const ingots = {
 };
 
 // Рекурсивний підрахунок ресурсів
-function getResources(item, qty, result = {}) {
+function getResources(item, qty, result = {}, depth = 0) {
   if(ingots[item]){
     for(let sub in ingots[item]){
       const total = ingots[item][sub] * qty;
       result[sub] = (result[sub] || 0) + total;
       if(ingots[sub]){
-        getResources(sub, total, result);
+        getResources(sub, total, result, depth+1);
       }
     }
   } else {
@@ -183,17 +173,19 @@ function getResources(item, qty, result = {}) {
   return result;
 }
 
-// Показ ресурсів для зброї
+// Показ ресурсів для зброї з підсумком руди/злитків
 function displayWeaponResources(name){
   const weapon = weapons[name];
   let total = {};
+  let breakdown = {};
 
   for(let item in weapon){
     const qty = weapon[item];
+    // підрахунок для деталей
+    total[item] = (total[item] || 0) + qty;
+    // підрахунок ресурсів для злитків
     if(ingots[item]){
-      getResources(item, qty, total);
-    } else {
-      total[item] = (total[item] || 0) + qty;
+      getResources(item, qty, breakdown);
     }
   }
 
@@ -201,6 +193,14 @@ function displayWeaponResources(name){
   for(let res in total){
     text += `• ${res}: ${total[res]}\n`;
   }
+
+  if(Object.keys(breakdown).length > 0){
+    text += `\nПотрібні ресурси для крафту злитків:\n`;
+    for(let res in breakdown){
+      text += `• ${res}: ${breakdown[res]}\n`;
+    }
+  }
+
   document.getElementById('weaponResult').innerText = text;
 }
 
@@ -261,5 +261,7 @@ createCustomSelect(document.getElementById('ingotSelect'), ingots, displayIngotR
 </script>
 </body>
 </html>
+
+
 
 
