@@ -96,7 +96,8 @@ const data = {
     "Корпус важкої зброї": { "Злиток заліза":2, "Злиток сталі":2, "Дерево":10 },
     "Корпус легкої зброї": { "Злиток заліза":1, "Злиток сталі":1, "Дерево":5 },
     "Барабан": { "Злиток сталі":1 },
-    "Дуло": { "Злиток сталі":1 }
+    "Дуло": { "Злиток сталі":1 },
+    "Глиняна форма": { "Глина":5, "Вугілля":5 }   // ➜ ДОДАНО ФОРМУ
   },
   ingots: {
     "Злиток сталі": { "Злиток заліза":1, "Вугілля":5, "Глиняна форма":1 },
@@ -143,7 +144,7 @@ function getRecipe(name) {
   return null;
 }
 
-// Рекурсивне розгортання: базові (руда, дерево, допоміжні), злитки, компоненти
+// Рекурсивне розгортання
 function expand(name, count, base = {}, ingots = {}, components = {}) {
   if (isPart(name)) {
     components[name] = (components[name] || 0) + count;
@@ -159,7 +160,6 @@ function expand(name, count, base = {}, ingots = {}, components = {}) {
   return { base, ingots, components };
 }
 
-// Рендер предметів категорії
 function renderItems() {
   items.innerHTML = '';
   const catData = data[currentCategory] || {};
@@ -186,7 +186,6 @@ function renderItems() {
   });
 }
 
-// Меню категорій
 menu.querySelectorAll('div').forEach(node => {
   node.addEventListener('click', () => {
     const cat = node.dataset.category;
@@ -200,7 +199,6 @@ menu.querySelectorAll('div').forEach(node => {
   });
 });
 
-// Основний вивід: Руда та дерево / Злитки / Компоненти
 function showSummary() {
   const qty = parseInt(qtyInput.value) || 1;
   const recipe = data[currentCategory][currentItem];
@@ -210,63 +208,49 @@ function showSummary() {
     expand(k, recipe[k] * qty, base, ingots, components);
   }
 
-  // Показувати селектор золота, якщо у розрахунку є золото або обрано сам інгот золота
   const usesGold = !!ingots["Злиток золота"] || currentItem === "Злиток золота";
   goldSelector.style.display = usesGold ? 'inline-flex' : 'none';
 
-  // Формування виводу (HTML)
   let html = `<b>${currentItem} × ${qty}</b><br><br>`;
 
-  // Руда та дерево
   const oreKeys = Object.keys(base).filter(k =>
     k.toLowerCase().includes('руда') || k.toLowerCase().includes('самородок') || k === 'Дерево'
   ).sort();
   const auxKeys = Object.keys(base).filter(k => !oreKeys.includes(k)).sort();
 
   html += `<span class="section-title">Руда та дерево:</span><br>`;
-  if (oreKeys.length === 0) {
-    html += `• Немає<br>`;
-  } else {
-    oreKeys.forEach(k => { html += `• ${k}: ${base[k]}<br>`; });
-  }
+  if (oreKeys.length === 0) html += `• Немає<br>`;
+  else oreKeys.forEach(k => html += `• ${k}: ${base[k]}<br>`);
 
   if (auxKeys.length > 0) {
     html += `<br><span class="section-title">Допоміжні базові:</span><br>`;
-    auxKeys.forEach(k => { html += `• ${k}: ${base[k]}<br>`; });
+    auxKeys.forEach(k => html += `• ${k}: ${base[k]}<br>`);
   }
 
-  // Злитки
   html += `<br><span class="section-title">Злитки:</span><br>`;
   const ingKeys = Object.keys(ingots).sort();
-  if (ingKeys.length === 0) {
-    html += `• Немає<br>`;
-  } else {
-    ingKeys.forEach(k => { html += `• ${k}: ${ingots[k]}<br>`; });
-  }
+  if (ingKeys.length === 0) html += `• Немає<br>`;
+  else ingKeys.forEach(k => html += `• ${k}: ${ingots[k]}<br>`);
 
-  // Компоненти
   html += `<br><span class="section-title">Компоненти:</span><br>`;
   const compKeys = Object.keys(components).sort();
-  if (compKeys.length === 0) {
-    html += `• Немає<br>`;
-  } else {
-    compKeys.forEach(k => { html += `• ${k}: ${components[k]}<br>`; });
-  }
+  if (compKeys.length === 0) html += `• Немає<br>`;
+  else compKeys.forEach(k => html += `• ${k}: ${components[k]}<br>`);
 
-  // Рендер як HTML, щоб теги працювали
   summary.innerHTML = html;
 }
 
-// Перерахунок при зміні кількості або варіанту золота
 qtyInput.addEventListener('input', () => { if (currentItem) showSummary(); });
 goldOption.addEventListener('change', () => { if (currentItem) showSummary(); });
 
-// Автовибір першої категорії для старту
 const first = menu.querySelector('div[data-category]');
 if (first) first.click();
 </script>
 </body>
 </html>
+
+
+
 
 
 
