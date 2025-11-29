@@ -32,6 +32,27 @@ label { display:inline-flex; align-items:center; gap:8px; }
 input, select { padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.3); color:#fff; }
 input[type="number"] { width:90px; }
 .section-title { font-weight:bold; color:#ffdddd; margin-bottom:6px; display:inline-block; }
+
+/* Графічні блоки крафту */
+.chain-container { display:flex; flex-direction:column; align-items:center; gap:16px; margin:12px 0; }
+.chain-block { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; padding:16px; border-radius:12px; min-width:220px; color:#fff; font-weight:bold;
+    opacity:0; transform:translateY(30px); transition: all 0.5s ease, box-shadow 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
+.chain-block.show { opacity:1; transform:translateY(0); }
+.chain-block:hover { box-shadow: 0 8px 15px rgba(0,0,0,0.6); transform:translateY(-2px); transition: all 0.3s ease; }
+.chain-ore { background:linear-gradient(145deg,#6b4226,#8b5e3c);}      /* базові ресурси */
+.chain-ingot { background:linear-gradient(145deg,#888888,#aaaaaa);}    /* злитки */
+.chain-part { background:linear-gradient(145deg,#4444ff,#6677ff);}     /* компоненти */
+.chain-finish { background:linear-gradient(145deg,#ff4444,#ff7777);}   /* готовий предмет */
+.chain-item { display:flex; flex-direction:column; align-items:center; padding:8px 12px; border-radius:8px; text-align:center; min-width:110px; }
+.chain-arrow { font-size:28px; opacity:0; transform:translateY(20px); transition: all 0.5s ease; }
+.chain-arrow.show { opacity:1; transform:translateY(0); }
+
+/* Адаптив */
+@media (max-width:800px){
+  .container { flex-direction:column; }
+  .menu { width:100%; display:flex; flex-direction:row; overflow:auto; }
+  .menu div { flex:0 0 auto; }
+}
 </style>
 </head>
 <body>
@@ -44,7 +65,7 @@ input[type="number"] { width:90px; }
     <div data-category="rifles">Гвинтівки</div>
     <div data-category="repeaters">Ріпітери</div>
     <div data-category="shotguns">Дробовики</div>
-    <div data-category="ingots">Злитки</div>
+    <div data-category="ingots">Злитки та плавка</div>
     <div data-category="parts">Запчастини</div>
   </div>
 
@@ -62,7 +83,8 @@ input[type="number"] { width:90px; }
 
     <div class="items" id="items"></div>
 
-    <div class="block" id="summary">Виберіть предмет</div>
+    <div class="chain-container" id="craftChain"></div>
+    <div class="block" id="totals">Загальні ресурси: виберіть предмет</div>
   </div>
 </div>
 
@@ -97,7 +119,7 @@ const data = {
     "Корпус легкої зброї": { "Злиток заліза":1, "Злиток сталі":1, "Дерево":5 },
     "Барабан": { "Злиток сталі":1 },
     "Дуло": { "Злиток сталі":1 },
-    "Глиняна форма": { "Глина":5, "Вугілля":5 }   // ➜ ДОДАНО ФОРМУ
+    "Глиняна форма": { "Глина":5, "Вугілля":5 }
   },
   ingots: {
     "Злиток сталі": { "Злиток заліза":1, "Вугілля":5, "Глиняна форма":1 },
@@ -118,7 +140,8 @@ const data = {
 // DOM
 const menu = document.getElementById('menu');
 const items = document.getElementById('items');
-const summary = document.getElementById('summary');
+const craftChain = document.getElementById('craftChain');
+const totals = document.getElementById('totals');
 const qtyInput = document.getElementById('qty');
 const goldSelector = document.getElementById('goldSelector');
 const goldOption = document.getElementById('goldOption');
@@ -126,11 +149,9 @@ const goldOption = document.getElementById('goldOption');
 let currentCategory = '';
 let currentItem = '';
 
-// Хелпери
-const isPart = (name) => Object.prototype.hasOwnProperty.call(data.parts, name);
-const isIngot = (name) => Object.prototype.hasOwnProperty.call(data.ingots, name);
+const isPart = name => Object.prototype.hasOwnProperty.call(data.parts, name);
+const isIngot = name => Object.prototype.hasOwnProperty.call(data.ingots, name);
 
-// Отримати рецепт з урахуванням варіанта золота
 function getRecipe(name) {
   if (isPart(name)) return data.parts[name];
   if (isIngot(name)) {
@@ -144,16 +165,21 @@ function getRecipe(name) {
   return null;
 }
 
-// Рекурсивне розгортання
-function expand(name, count, base = {}, ingots = {}, components = {}) {
+/**
+ * expand(name, count, base, ingots, components)
+ * Рекурсивно розгортає рецепт:
+ * - якщо name є частиною (parts) -> додає у components і розгортає його рецепт
+ * - якщо name є злитком (ingots) -> додає у ingots і розгортає його рецепт
+ * - інакше -> вважаємо базовим ресурсом і додаємо у base
+ */
+function expand(name, count, base={}, ingots={}, components={}) {
+  const recipe = getRecipe(name);
   if (isPart(name)) {
     components[name] = (components[name] || 0) + count;
-    const recipe = getRecipe(name);
-    for (const k in recipe) expand(k, recipe[k] * count, base, ingots, components);
+    if (recipe) for (const k in recipe) expand(k, recipe[k]*count, base, ingots, components);
   } else if (isIngot(name)) {
     ingots[name] = (ingots[name] || 0) + count;
-    const recipe = getRecipe(name);
-    for (const k in recipe) expand(k, recipe[k] * count, base, ingots, components);
+    if (recipe) for (const k in recipe) expand(k, recipe[k]*count, base, ingots, components);
   } else {
     base[name] = (base[name] || 0) + count;
   }
@@ -161,93 +187,150 @@ function expand(name, count, base = {}, ingots = {}, components = {}) {
 }
 
 function renderItems() {
-  items.innerHTML = '';
+  items.innerHTML='';
   const catData = data[currentCategory] || {};
   const keys = Object.keys(catData);
-  if (keys.length === 0) {
+  if (!keys.length) {
     const d = document.createElement('div');
-    d.className = 'item';
-    d.textContent = 'Немає елементів у цій категорії';
-    d.style.opacity = '0.8';
+    d.className='item';
+    d.textContent='Немає елементів у цій категорії';
+    d.style.opacity='0.8';
     items.appendChild(d);
     return;
   }
-  keys.forEach(itemName => {
+  keys.forEach(itemName=>{
     const d = document.createElement('div');
-    d.className = 'item';
-    d.textContent = itemName;
-    d.addEventListener('click', () => {
-      currentItem = itemName;
-      items.querySelectorAll('.item').forEach(el => el.classList.remove('active-item'));
+    d.className='item';
+    d.textContent=itemName;
+    d.addEventListener('click', ()=>{
+      currentItem=itemName;
+      items.querySelectorAll('.item').forEach(el=>el.classList.remove('active-item'));
       d.classList.add('active-item');
-      showSummary();
+      showGraphicalSummary();
     });
     items.appendChild(d);
   });
 }
 
-menu.querySelectorAll('div').forEach(node => {
-  node.addEventListener('click', () => {
-    const cat = node.dataset.category;
+menu.querySelectorAll('div').forEach(node=>{
+  node.addEventListener('click', ()=>{
+    const cat=node.dataset.category;
     if (!cat || !data[cat]) return;
-    currentCategory = cat;
-    menu.querySelectorAll('div').forEach(el => el.classList.remove('active'));
+    currentCategory=cat;
+    menu.querySelectorAll('div').forEach(el=>el.classList.remove('active'));
     node.classList.add('active');
     renderItems();
-    summary.innerHTML = 'Виберіть предмет';
-    goldSelector.style.display = 'none';
+    craftChain.innerHTML = '';
+    totals.innerHTML='Загальні ресурси: виберіть предмет';
+    goldSelector.style.display='none';
+    // автоматично вибрати перший елемент у категорії (якщо є)
+    const firstItem = items.querySelector('.item');
+    if(firstItem){
+      firstItem.click();
+    }
   });
 });
 
-function showSummary() {
+function showGraphicalSummary() {
+  if (!currentCategory || !currentItem) {
+    craftChain.innerHTML = '';
+    totals.innerHTML = 'Загальні ресурси: виберіть предмет';
+    return;
+  }
+
   const qty = parseInt(qtyInput.value) || 1;
   const recipe = data[currentCategory][currentItem];
   let base = {}, ingots = {}, components = {};
+  for (const k in recipe) expand(k, recipe[k] * qty, base, ingots, components);
 
-  for (const k in recipe) {
-    expand(k, recipe[k] * qty, base, ingots, components);
-  }
-
-  const usesGold = !!ingots["Злиток золота"] || currentItem === "Злиток золота";
+  const usesGold = !!ingots["Злиток золота"] || currentItem==="Злиток золота";
   goldSelector.style.display = usesGold ? 'inline-flex' : 'none';
 
-  let html = `<b>${currentItem} × ${qty}</b><br><br>`;
+  const icons = {
+    'Дерево':'🪵','Залізна руда':'⛏️','Срібна руда':'⛏️','Золота руда':'⛏️','Мідна руда':'⛏️',
+    'Свинцева руда':'⛏️','Цинкова руда':'⛏️','Вугілля':'🔥','Глина':'🟤',
+    'Злиток заліза':'⚒️','Злиток сталі':'⚒️','Злиток золота':'⚒️','Злиток срібла':'⚒️',
+    'Злиток міді':'⚒️','Злиток свинцю':'⚒️','Злиток латуні':'⚒️','Злиток цинку':'⚒️',
+    'Корпус важкої зброї':'🔩','Корпус легкої зброї':'🔩','Барабан':'🔩','Дуло':'🔩','Глиняна форма':'🟤'
+  };
 
-  const oreKeys = Object.keys(base).filter(k =>
-    k.toLowerCase().includes('руда') || k.toLowerCase().includes('самородок') || k === 'Дерево'
-  ).sort();
-  const auxKeys = Object.keys(base).filter(k => !oreKeys.includes(k)).sort();
-
-  html += `<span class="section-title">Руда та дерево:</span><br>`;
-  if (oreKeys.length === 0) html += `• Немає<br>`;
-  else oreKeys.forEach(k => html += `• ${k}: ${base[k]}<br>`);
-
-  if (auxKeys.length > 0) {
-    html += `<br><span class="section-title">Допоміжні базові:</span><br>`;
-    auxKeys.forEach(k => html += `• ${k}: ${base[k]}<br>`);
+  function makeBlock(items, className) {
+    const block = document.createElement('div');
+    block.className = 'chain-block ' + className;
+    // якщо немає елементів (рідкісна ситуація), показати "Немає"
+    const keys = Object.keys(items);
+    if (!keys.length) {
+      const empty = document.createElement('div');
+      empty.className = 'chain-item';
+      empty.textContent = '— Немає —';
+      block.appendChild(empty);
+      return block;
+    }
+    keys.forEach(k=>{
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'chain-item';
+      itemDiv.textContent = `${icons[k] || ''} ${k}: ${items[k]}`;
+      block.appendChild(itemDiv);
+    });
+    return block;
   }
 
-  html += `<br><span class="section-title">Злитки:</span><br>`;
-  const ingKeys = Object.keys(ingots).sort();
-  if (ingKeys.length === 0) html += `• Немає<br>`;
-  else ingKeys.forEach(k => html += `• ${k}: ${ingots[k]}<br>`);
+  function createArrow() {
+    const arrow = document.createElement('div');
+    arrow.className = 'chain-arrow';
+    arrow.textContent = '⬇️';
+    return arrow;
+  }
 
-  html += `<br><span class="section-title">Компоненти:</span><br>`;
-  const compKeys = Object.keys(components).sort();
-  if (compKeys.length === 0) html += `• Немає<br>`;
-  else compKeys.forEach(k => html += `• ${k}: ${components[k]}<br>`);
+  // Створюємо та додаємо блоки
+  craftChain.innerHTML = '';
+  const blocks = [];
+  if (Object.keys(base).length) { blocks.push(makeBlock(base,'chain-ore')); blocks.push(createArrow()); }
+  if (Object.keys(ingots).length) { blocks.push(makeBlock(ingots,'chain-ingot')); blocks.push(createArrow()); }
+  if (Object.keys(components).length) { blocks.push(makeBlock(components,'chain-part')); blocks.push(createArrow()); }
 
-  summary.innerHTML = html;
+  const finish = document.createElement('div');
+  finish.className = 'chain-block chain-finish';
+  const finishDiv = document.createElement('div');
+  finishDiv.className = 'chain-item';
+  finishDiv.textContent = `${currentItem} × ${qty}`;
+  finish.appendChild(finishDiv);
+  blocks.push(finish);
+
+  blocks.forEach((b,i)=>{
+    craftChain.appendChild(b);
+    // анімація появи по черзі
+    setTimeout(()=>{ b.classList.add('show'); 
+      // якщо це стрілка — додати окремий клас show для неї (щоб використовувати той же стиль)
+      if(b.classList.contains('chain-arrow')) b.classList.add('show');
+    }, i * 350);
+  });
+
+  // Підсумок загальних ресурсів (складаємо базові, злитки, компоненти)
+  let total = {};
+  [base, ingots, components].forEach(obj=>{
+    for (let k in obj) total[k] = (total[k] || 0) + obj[k];
+  });
+  const totalKeys = Object.keys(total);
+  if (!totalKeys.length) {
+    totals.innerHTML = `<b>Загальні ресурси для ${qty} шт:</b><br>• Немає`;
+  } else {
+    totals.innerHTML = `<b>Загальні ресурси для ${qty} шт:</b><br>` + totalKeys.map(k=>`${icons[k]||''} ${k}: ${total[k]}`).join('<br>');
+  }
 }
 
-qtyInput.addEventListener('input', () => { if (currentItem) showSummary(); });
-goldOption.addEventListener('change', () => { if (currentItem) showSummary(); });
+// Події для оновлення при зміні кількості або опцій золота
+qtyInput.addEventListener('input', ()=>{ if(currentItem) showGraphicalSummary(); });
+goldOption.addEventListener('change', ()=>{ if(currentItem) showGraphicalSummary(); });
 
+// Початковий клік по першій категорії (щоб одразу показати список)
 const first = menu.querySelector('div[data-category]');
 if (first) first.click();
 </script>
 </body>
 </html>
+
+
 
 
 
