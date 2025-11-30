@@ -19,12 +19,12 @@ body {
 }
 .container { display:flex; min-height:100vh; flex-direction:row; }
 .menu { width:220px; background: rgba(0,0,0,0.7); padding:20px; box-sizing:border-box; display:flex; flex-direction:column; gap:6px; }
-.menu div { padding:12px; background: rgba(255,255,255,0.05); cursor:pointer; border-radius:6px; transition:0.2s; }
+.menu div { padding:12px; background: rgba(255,255,255,0.05); cursor:pointer; border-radius:6px; transition: background-color 0.2s; will-change:background-color; }
 .menu div:hover, .menu .active { background: rgba(255,255,255,0.2); }
 .content { flex:1; padding:30px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); overflow-y:auto; }
 .controls { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
 .items { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-bottom:24px; }
-.items .item { padding:10px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:6px; transition:0.2s; display:flex; align-items:center; gap:8px; justify-content:space-between; min-height:40px; }
+.items .item { padding:10px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:6px; transition: background-color 0.2s; display:flex; align-items:center; gap:8px; justify-content:space-between; min-height:40px; will-change:background-color; }
 .items .item:hover { background: rgba(255,255,255,0.2); }
 .items .active-item { outline: 2px solid #ff4444; }
 .block { margin-top:30px; background: rgba(0,0,0,0.35); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
@@ -32,7 +32,7 @@ body {
 /* Прогрес-бар */
 .progress-container { margin-top:8px; background:rgba(0,0,0,0.5); border-radius:6px; padding:8px; }
 .progress-bar { width:100%; height:24px; background:rgba(100,100,100,0.3); border-radius:4px; overflow:hidden; border:1px solid rgba(100,100,100,0.5); }
-.progress-fill { height:100%; background:linear-gradient(90deg, #ff4444, #ff8844); width:0%; transition:width 0.3s ease; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; color:#fff; }
+.progress-fill { height:100%; background:linear-gradient(90deg, #ff4444, #ff8844); width:0%; transition:width 0.4s ease; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; color:#fff; will-change:width; }
 .progress-text { font-size:12px; color:#ffb366; margin-top:4px; text-align:center; }
 
 /* Статус ресурсів за категоріями */
@@ -51,7 +51,7 @@ body {
 
 /* Вкладки */
 .tabs-container { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-.tab-btn { padding:6px 12px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:4px; color:#fff; cursor:pointer; transition:0.2s; font-size:12px; }
+.tab-btn { padding:6px 12px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:4px; color:#fff; cursor:pointer; transition: background-color 0.2s; font-size:12px; will-change:background-color; }
 .tab-btn:hover { background:rgba(255,255,255,0.15); }
 .tab-btn.active { background:rgba(255,100,100,0.3); border-color:rgba(255,100,100,0.5); }
 
@@ -65,14 +65,14 @@ input[type="number"] { width:90px; }
 .section-title { font-weight:bold; color:#ffdddd; margin-bottom:6px; display:inline-block; }
 
 /* Відмітки для ресурсів */
-.resource-item { display:flex; align-items:center; gap:10px; padding:12px 16px; margin:10px 0; background:rgba(255,255,255,0.08); border-radius:6px; cursor:pointer; transition:0.2s; min-height:48px; }
+.resource-item { display:flex; align-items:center; gap:10px; padding:12px 16px; margin:10px 0; background:rgba(255,255,255,0.08); border-radius:6px; cursor:pointer; transition: background-color 0.2s; min-height:48px; will-change:background-color; }
 .resource-item:hover { background:rgba(255,255,255,0.12); }
 .resource-item.collected { background:rgba(100,200,100,0.2); }
 .resource-item input[type="checkbox"] { cursor:pointer; width:18px; height:18px; flex-shrink:0; }
 .resource-item label { margin:0; display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
 .resource-item .resource-count { min-width:60px; text-align:right; font-weight:bold; color:#ffb366; flex-shrink:0; }
 .button-group { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
-.btn { padding:8px 12px; background:rgba(100,150,255,0.3); border:1px solid rgba(100,150,255,0.5); border-radius:6px; color:#fff; cursor:pointer; transition:0.2s; white-space:nowrap; flex-shrink:0; }
+.btn { padding:8px 12px; background:rgba(100,150,255,0.3); border:1px solid rgba(100,150,255,0.5); border-radius:6px; color:#fff; cursor:pointer; transition: background-color 0.2s; white-space:nowrap; flex-shrink:0; will-change:background-color; }
 .btn:hover { background:rgba(100,150,255,0.5); }
 .btn-danger { background:rgba(255,100,100,0.3); border-color:rgba(255,100,100,0.5); }
 .btn-danger:hover { background:rgba(255,100,100,0.5); }
@@ -80,15 +80,15 @@ input[type="number"] { width:90px; }
 /* Графічні блоки крафту */
 .chain-container { display:flex; flex-direction:column; align-items:center; gap:20px; margin:30px 0; }
 .chain-block { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; padding:16px; border-radius:12px; min-width:220px; color:#fff; font-weight:bold;
-    opacity:0; transform:translateY(30px); transition: all 0.5s ease, box-shadow 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
+    opacity:0; transform:translateY(30px); transition: opacity 0.5s ease, transform 0.5s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.4); will-change:opacity,transform; }
 .chain-block.show { opacity:1; transform:translateY(0); }
-.chain-block:hover { box-shadow: 0 8px 15px rgba(0,0,0,0.6); transform:translateY(-2px); transition: all 0.3s ease; }
+.chain-block:hover { box-shadow: 0 8px 15px rgba(0,0,0,0.6); transform:translateY(-2px); }
 .chain-ore { background:linear-gradient(145deg,#6b4226,#8b5e3c);}      /* базові ресурси */
 .chain-ingot { background:linear-gradient(145deg,#888888,#aaaaaa);}    /* злитки */
 .chain-part { background:linear-gradient(145deg,#4444ff,#6677ff);}     /* компоненти */
 .chain-finish { background:linear-gradient(145deg,#ff4444,#ff7777);}   /* готовий предмет */
 .chain-item { display:flex; flex-direction:column; align-items:center; padding:8px 12px; border-radius:8px; text-align:center; min-width:110px; }
-.chain-arrow { font-size:28px; opacity:0; transform:translateY(20px); transition: all 0.5s ease; }
+.chain-arrow { font-size:28px; opacity:0; transform:translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; will-change:opacity,transform; }
 .chain-arrow.show { opacity:1; transform:translateY(0); }
 
 /* Адаптив */
@@ -425,11 +425,12 @@ function showGraphicalSummary() {
 
   blocks.forEach((b,i)=>{
     craftChain.appendChild(b);
-    // анімація появи по черзі
-    setTimeout(()=>{ b.classList.add('show'); 
-      // якщо це стрілка — додати окремий клас show для неї (щоб використовувати той же стиль)
-      if(b.classList.contains('chain-arrow')) b.classList.add('show');
-    }, i * 350);
+    // анімація появи по черзі - з меншим інтервалом для плавності
+    requestAnimationFrame(()=>{
+      setTimeout(()=>{ b.classList.add('show'); 
+        if(b.classList.contains('chain-arrow')) b.classList.add('show');
+      }, i * 200);
+    });
   });
 
   // Підсумок загальних ресурсів (складаємо базові, злитки, компоненти)
@@ -581,6 +582,7 @@ if (first) first.click();
 </script>
 </body>
 </html>
+
 
 
 
