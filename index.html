@@ -21,33 +21,64 @@ body {
 .menu { width:220px; background: rgba(0,0,0,0.7); padding:20px; box-sizing:border-box; display:flex; flex-direction:column; gap:6px; }
 .menu div { padding:12px; background: rgba(255,255,255,0.05); cursor:pointer; border-radius:6px; transition:0.2s; }
 .menu div:hover, .menu .active { background: rgba(255,255,255,0.2); }
-.content { flex:1; padding:20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); overflow-y:auto; }
-.controls { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-.items { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; }
-.items .item { padding:10px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:6px; transition:0.2s; }
+.content { flex:1; padding:30px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); overflow-y:auto; }
+.controls { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+.items { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-bottom:24px; }
+.items .item { padding:10px; background: rgba(255,255,255,0.1); cursor:pointer; border-radius:6px; transition:0.2s; display:flex; align-items:center; gap:8px; justify-content:space-between; min-height:40px; }
 .items .item:hover { background: rgba(255,255,255,0.2); }
 .items .active-item { outline: 2px solid #ff4444; }
-.block { margin-top:15px; background: rgba(0,0,0,0.35); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
+.block { margin-top:30px; background: rgba(0,0,0,0.35); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); white-space:pre-line; }
+
+/* Прогрес-бар */
+.progress-container { margin-top:8px; background:rgba(0,0,0,0.5); border-radius:6px; padding:8px; }
+.progress-bar { width:100%; height:24px; background:rgba(100,100,100,0.3); border-radius:4px; overflow:hidden; border:1px solid rgba(100,100,100,0.5); }
+.progress-fill { height:100%; background:linear-gradient(90deg, #ff4444, #ff8844); width:0%; transition:width 0.3s ease; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; color:#fff; }
+.progress-text { font-size:12px; color:#ffb366; margin-top:4px; text-align:center; }
+
+/* Статус ресурсів за категоріями */
+.resource-item.base-resource { border-left:3px solid #8b5e3c; }
+.resource-item.ingot-resource { border-left:3px solid #aaaaaa; }
+.resource-item.component-resource { border-left:3px solid #6677ff; }
+
+.resource-status { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; flex-shrink:0; }
+.status-empty { background:rgba(100,100,100,0.3); color:#888; }
+.status-partial { background:rgba(255,200,0,0.3); color:#ffc800; }
+.status-complete { background:rgba(100,200,100,0.3); color:#66ff66; }
+
+/* Пошук */
+.search-box { width:100%; padding:10px 14px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.25); border-radius:6px; color:#fff; margin-bottom:24px; }
+.search-box::placeholder { color:rgba(255,255,255,0.5); }
+
+/* Вкладки */
+.tabs-container { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.tab-btn { padding:6px 12px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:4px; color:#fff; cursor:pointer; transition:0.2s; font-size:12px; }
+.tab-btn:hover { background:rgba(255,255,255,0.15); }
+.tab-btn.active { background:rgba(255,100,100,0.3); border-color:rgba(255,100,100,0.5); }
+
+/* Улюблені */
+.favorites-badge { position:relative; }
+.favorites-badge.favorited::after { content:'★'; position:absolute; top:-8px; right:-8px; color:#ffc800; font-size:20px; }
+
 label { display:inline-flex; align-items:center; gap:8px; }
 input, select { padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.3); color:#fff; }
 input[type="number"] { width:90px; }
 .section-title { font-weight:bold; color:#ffdddd; margin-bottom:6px; display:inline-block; }
 
 /* Відмітки для ресурсів */
-.resource-item { display:flex; align-items:center; gap:8px; padding:8px; margin:4px 0; background:rgba(255,255,255,0.08); border-radius:6px; cursor:pointer; transition:0.2s; }
+.resource-item { display:flex; align-items:center; gap:10px; padding:12px 16px; margin:10px 0; background:rgba(255,255,255,0.08); border-radius:6px; cursor:pointer; transition:0.2s; min-height:48px; }
 .resource-item:hover { background:rgba(255,255,255,0.12); }
 .resource-item.collected { background:rgba(100,200,100,0.2); }
-.resource-item input[type="checkbox"] { cursor:pointer; width:18px; height:18px; }
-.resource-item label { margin:0; display:flex; align-items:center; gap:8px; flex:1; }
-.resource-item .resource-count { min-width:40px; text-align:right; font-weight:bold; color:#ffb366; }
-.button-group { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-.btn { padding:8px 12px; background:rgba(100,150,255,0.3); border:1px solid rgba(100,150,255,0.5); border-radius:6px; color:#fff; cursor:pointer; transition:0.2s; }
+.resource-item input[type="checkbox"] { cursor:pointer; width:18px; height:18px; flex-shrink:0; }
+.resource-item label { margin:0; display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+.resource-item .resource-count { min-width:60px; text-align:right; font-weight:bold; color:#ffb366; flex-shrink:0; }
+.button-group { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+.btn { padding:8px 12px; background:rgba(100,150,255,0.3); border:1px solid rgba(100,150,255,0.5); border-radius:6px; color:#fff; cursor:pointer; transition:0.2s; white-space:nowrap; flex-shrink:0; }
 .btn:hover { background:rgba(100,150,255,0.5); }
 .btn-danger { background:rgba(255,100,100,0.3); border-color:rgba(255,100,100,0.5); }
 .btn-danger:hover { background:rgba(255,100,100,0.5); }
 
 /* Графічні блоки крафту */
-.chain-container { display:flex; flex-direction:column; align-items:center; gap:16px; margin:12px 0; }
+.chain-container { display:flex; flex-direction:column; align-items:center; gap:20px; margin:30px 0; }
 .chain-block { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; padding:16px; border-radius:12px; min-width:220px; color:#fff; font-weight:bold;
     opacity:0; transform:translateY(30px); transition: all 0.5s ease, box-shadow 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
 .chain-block.show { opacity:1; transform:translateY(0); }
@@ -95,6 +126,13 @@ input[type="number"] { width:90px; }
     </div>
 
     <div class="items" id="items"></div>
+
+    <div class="tabs-container" id="tabsContainer" style="display:none;">
+      <button class="tab-btn active" data-tab="all">Усе</button>
+      <button class="tab-btn" data-tab="needed">Потрібно</button>
+    </div>
+
+    <input type="text" class="search-box" id="searchBox" placeholder="🔍 Пошук ресурсів..." style="display:none;">
 
     <div class="chain-container" id="craftChain"></div>
     <div class="block" id="totals">Загальні ресурси: виберіть предмет</div>
@@ -171,6 +209,9 @@ const clearAllBtn = document.getElementById('clearAllBtn');
 let currentCategory = '';
 let currentItem = '';
 let collected = {};
+let favorites = {};
+let currentTab = 'all';
+let searchQuery = '';
 
 const isPart = name => Object.prototype.hasOwnProperty.call(data.parts, name);
 const isIngot = name => Object.prototype.hasOwnProperty.call(data.ingots, name);
@@ -183,6 +224,19 @@ function loadCollected() {
   } catch (e) {
     collected = {};
   }
+}
+
+function loadFavorites() {
+  try {
+    const saved = localStorage.getItem('favoriteWeapons');
+    favorites = saved ? JSON.parse(saved) : {};
+  } catch (e) {
+    favorites = {};
+  }
+}
+
+function saveFavorites() {
+  localStorage.setItem('favoriteWeapons', JSON.stringify(favorites));
 }
 
 function saveCollected() {
@@ -247,8 +301,28 @@ function renderItems() {
   }
   keys.forEach(itemName=>{
     const d = document.createElement('div');
-    d.className='item';
-    d.textContent=itemName;
+    d.className='item favorites-badge';
+    if (favorites[itemName]) d.classList.add('favorited');
+    
+    const textSpan = document.createElement('span');
+    textSpan.textContent=itemName;
+    textSpan.style.flex='1';
+    d.appendChild(textSpan);
+    
+    const favBtn = document.createElement('button');
+    favBtn.className='btn';
+    favBtn.style.padding='4px 8px';
+    favBtn.textContent = favorites[itemName] ? '★' : '☆';
+    favBtn.style.minWidth='30px';
+    favBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      favorites[itemName] = !favorites[itemName];
+      saveFavorites();
+      renderItems();
+    });
+    
+    d.appendChild(favBtn);
+    
     d.addEventListener('click', ()=>{
       currentItem=itemName;
       items.querySelectorAll('.item').forEach(el=>el.classList.remove('active-item'));
@@ -364,22 +438,60 @@ function showGraphicalSummary() {
     for (let k in obj) total[k] = (total[k] || 0) + obj[k];
   });
   const totalKeys = Object.keys(total);
+  
+  // Показ вкладок та пошуку
+  document.getElementById('tabsContainer').style.display = totalKeys.length > 0 ? 'flex' : 'none';
+  document.getElementById('searchBox').style.display = totalKeys.length > 0 ? 'block' : 'none';
+  
   if (!totalKeys.length) {
     totals.innerHTML = `<b>Загальні ресурси для ${qty} шт:</b><br>• Немає`;
     resourcesList.innerHTML = '';
+    document.getElementById('tabsContainer').style.display = 'none';
+    document.getElementById('searchBox').style.display = 'none';
   } else {
-    totals.innerHTML = `<b>Загальні ресурси для ${qty} шт:</b><br>` + totalKeys.map(k=>`${icons[k]||''} ${k}: ${total[k]}`).join('<br>');
+    // Обчислення прогресу
+    let collectedCount = 0;
+    totalKeys.forEach(k => {
+      if (collected[k]) collectedCount++;
+    });
+    const progress = Math.round((collectedCount / totalKeys.length) * 100);
     
-    // Відображення ресурсів з галочками
+    totals.innerHTML = `<b>Загальні ресурси для ${qty} шт:</b><br>` + totalKeys.map(k=>`${icons[k]||''} ${k}: ${total[k]}`).join('<br>');
+    totals.innerHTML += `
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${progress}%">
+            ${progress > 5 ? progress + '%' : ''}
+          </div>
+        </div>
+        <div class="progress-text">${collectedCount}/${totalKeys.length} ресурсів зібрано</div>
+      </div>
+    `;
+    
+    // Відображення ресурсів з галочками та статусом
     resourcesList.innerHTML = '<b style="margin-bottom:8px; display:block;">Зібрані ресурси:</b>';
-    totalKeys.forEach(k=>{
+    
+    let filteredKeys = totalKeys;
+    if (currentTab === 'needed') {
+      filteredKeys = totalKeys.filter(k => !collected[k]);
+    }
+    if (searchQuery) {
+      filteredKeys = filteredKeys.filter(k => k.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    
+    filteredKeys.forEach(k=>{
       const needed = total[k];
       const haveCount = collected[k] || 0;
       const isCollected = !!collected[k];
       const remaining = Math.max(0, needed - haveCount);
       
+      // Визначення категорії
+      let resourceType = 'base-resource';
+      if (isPart(k)) resourceType = 'component-resource';
+      else if (isIngot(k)) resourceType = 'ingot-resource';
+      
       const itemDiv = document.createElement('div');
-      itemDiv.className = 'resource-item' + (isCollected ? ' collected' : '');
+      itemDiv.className = 'resource-item ' + resourceType + (isCollected ? ' collected' : '');
       
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
@@ -391,21 +503,58 @@ function showGraphicalSummary() {
       const label = document.createElement('label');
       label.innerHTML = `${icons[k]||''} <span>${k}</span>`;
       
+      // Статус батон
+      const statusDiv = document.createElement('div');
+      statusDiv.className = 'resource-status';
+      if (isCollected) {
+        statusDiv.className += ' status-complete';
+        statusDiv.innerHTML = '✓';
+      } else if (needed > 0) {
+        statusDiv.className += ' status-empty';
+        statusDiv.innerHTML = '○';
+      }
+      
       const countSpan = document.createElement('div');
       countSpan.className = 'resource-count';
       countSpan.textContent = isCollected ? `✓ ${haveCount}/${needed}` : `0/${needed}`;
       
       itemDiv.appendChild(checkbox);
       itemDiv.appendChild(label);
+      itemDiv.appendChild(statusDiv);
       itemDiv.appendChild(countSpan);
       resourcesList.appendChild(itemDiv);
     });
+    
+    if (filteredKeys.length === 0 && (currentTab === 'needed' || searchQuery)) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.style.padding = '12px';
+      emptyMsg.style.textAlign = 'center';
+      emptyMsg.style.opacity = '0.7';
+      emptyMsg.textContent = currentTab === 'needed' ? 'Усі ресурси зібрані! 🎉' : 'Нічого не знайдено';
+      resourcesList.appendChild(emptyMsg);
+    }
   }
 }
 
 // Події для оновлення при зміні кількості або опцій золота
 qtyInput.addEventListener('input', ()=>{ if(currentItem) showGraphicalSummary(); });
 goldOption.addEventListener('change', ()=>{ if(currentItem) showGraphicalSummary(); });
+
+// Обробка вкладок
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentTab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (currentItem) showGraphicalSummary();
+  });
+});
+
+// Пошук
+document.getElementById('searchBox').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  if (currentItem) showGraphicalSummary();
+});
 
 // Обробка кнопок
 clearCollectedBtn.addEventListener('click', ()=>{
@@ -422,8 +571,9 @@ clearAllBtn.addEventListener('click', ()=>{
   }
 });
 
-// Завантаження збережених ресурсів на старті
+// Завантаження даних на старті
 loadCollected();
+loadFavorites();
 
 // Початковий клік по першій категорії (щоб одразу показати список)
 const first = menu.querySelector('div[data-category]');
@@ -431,6 +581,7 @@ if (first) first.click();
 </script>
 </body>
 </html>
+
 
 
 
