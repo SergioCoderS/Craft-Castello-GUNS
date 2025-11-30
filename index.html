@@ -33,6 +33,19 @@ input, select { padding:6px 8px; border-radius:6px; border:1px solid rgba(255,25
 input[type="number"] { width:90px; }
 .section-title { font-weight:bold; color:#ffdddd; margin-bottom:6px; display:inline-block; }
 
+/* Відмітки для ресурсів */
+.resource-item { display:flex; align-items:center; gap:8px; padding:8px; margin:4px 0; background:rgba(255,255,255,0.08); border-radius:6px; cursor:pointer; transition:0.2s; }
+.resource-item:hover { background:rgba(255,255,255,0.12); }
+.resource-item.collected { background:rgba(100,200,100,0.2); }
+.resource-item input[type="checkbox"] { cursor:pointer; width:18px; height:18px; }
+.resource-item label { margin:0; display:flex; align-items:center; gap:8px; flex:1; }
+.resource-item .resource-count { min-width:40px; text-align:right; font-weight:bold; color:#ffb366; }
+.button-group { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.btn { padding:8px 12px; background:rgba(100,150,255,0.3); border:1px solid rgba(100,150,255,0.5); border-radius:6px; color:#fff; cursor:pointer; transition:0.2s; }
+.btn:hover { background:rgba(100,150,255,0.5); }
+.btn-danger { background:rgba(255,100,100,0.3); border-color:rgba(255,100,100,0.5); }
+.btn-danger:hover { background:rgba(255,100,100,0.5); }
+
 /* Графічні блоки крафту */
 .chain-container { display:flex; flex-direction:column; align-items:center; gap:16px; margin:12px 0; }
 .chain-block { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; padding:16px; border-radius:12px; min-width:220px; color:#fff; font-weight:bold;
@@ -85,6 +98,12 @@ input[type="number"] { width:90px; }
 
     <div class="chain-container" id="craftChain"></div>
     <div class="block" id="totals">Загальні ресурси: виберіть предмет</div>
+    
+    <div class="button-group">
+      <button class="btn" id="clearCollectedBtn">Очистити всі галочки</button>
+      <button class="btn btn-danger" id="clearAllBtn">Скинути усе</button>
+    </div>
+    <div class="block" id="resourcesList"></div>
   </div>
 </div>
 
@@ -145,12 +164,40 @@ const totals = document.getElementById('totals');
 const qtyInput = document.getElementById('qty');
 const goldSelector = document.getElementById('goldSelector');
 const goldOption = document.getElementById('goldOption');
+const resourcesList = document.getElementById('resourcesList');
+const clearCollectedBtn = document.getElementById('clearCollectedBtn');
+const clearAllBtn = document.getElementById('clearAllBtn');
 
 let currentCategory = '';
 let currentItem = '';
+let collected = {};
 
 const isPart = name => Object.prototype.hasOwnProperty.call(data.parts, name);
 const isIngot = name => Object.prototype.hasOwnProperty.call(data.ingots, name);
+
+// Завантаження та збереження зібраних ресурсів
+function loadCollected() {
+  try {
+    const saved = localStorage.getItem('collectedResources');
+    collected = saved ? JSON.parse(saved) : {};
+  } catch (e) {
+    collected = {};
+  }
+}
+
+function saveCollected() {
+  localStorage.setItem('collectedResources', JSON.stringify(collected));
+}
+
+function toggleCollected(resourceName, amount) {
+  if (!collected[resourceName]) {
+    collected[resourceName] = amount;
+  } else {
+    delete collected[resourceName];
+  }
+  saveCollected();
+  if (currentItem) showGraphicalSummary();
+}
 
 function getRecipe(name) {
   if (isPart(name)) return data.parts[name];
@@ -241,7 +288,12 @@ function showGraphicalSummary() {
   const qty = parseInt(qtyInput.value) || 1;
   const recipe = data[currentCategory][currentItem];
   let base = {}, ingots = {}, components = {};
-  for (const k in recipe) expand(k, recipe[k] * qty, base, ingots, components);
+  for (const k in recipe) {
+    const result = expand(k, recipe[k] * qty, base, ingots, components);
+    base = result.base;
+    ingots = result.ingots;
+    components = result.components;
+  }
 
   const usesGold = !!ingots["Злиток золота"] || currentItem==="Злиток золота";
   goldSelector.style.display = usesGold ? 'inline-flex' : 'none';
@@ -314,8 +366,40 @@ function showGraphicalSummary() {
   const totalKeys = Object.keys(total);
   if (!totalKeys.length) {
     totals.innerHTML = `<b>Загальні ресурси для ${qty} шт:</b><br>• Немає`;
+    resourcesList.innerHTML = '';
   } else {
     totals.innerHTML = `<b>Загальні ресурси для ${qty} шт:</b><br>` + totalKeys.map(k=>`${icons[k]||''} ${k}: ${total[k]}`).join('<br>');
+    
+    // Відображення ресурсів з галочками
+    resourcesList.innerHTML = '<b style="margin-bottom:8px; display:block;">Зібрані ресурси:</b>';
+    totalKeys.forEach(k=>{
+      const needed = total[k];
+      const haveCount = collected[k] || 0;
+      const isCollected = !!collected[k];
+      const remaining = Math.max(0, needed - haveCount);
+      
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'resource-item' + (isCollected ? ' collected' : '');
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = isCollected;
+      checkbox.addEventListener('change', ()=>{
+        toggleCollected(k, needed);
+      });
+      
+      const label = document.createElement('label');
+      label.innerHTML = `${icons[k]||''} <span>${k}</span>`;
+      
+      const countSpan = document.createElement('div');
+      countSpan.className = 'resource-count';
+      countSpan.textContent = isCollected ? `✓ ${haveCount}/${needed}` : `0/${needed}`;
+      
+      itemDiv.appendChild(checkbox);
+      itemDiv.appendChild(label);
+      itemDiv.appendChild(countSpan);
+      resourcesList.appendChild(itemDiv);
+    });
   }
 }
 
@@ -323,31 +407,30 @@ function showGraphicalSummary() {
 qtyInput.addEventListener('input', ()=>{ if(currentItem) showGraphicalSummary(); });
 goldOption.addEventListener('change', ()=>{ if(currentItem) showGraphicalSummary(); });
 
+// Обробка кнопок
+clearCollectedBtn.addEventListener('click', ()=>{
+  collected = {};
+  saveCollected();
+  if(currentItem) showGraphicalSummary();
+});
+
+clearAllBtn.addEventListener('click', ()=>{
+  if(confirm('Ви впевнені? Це скине всі галочки.')) {
+    collected = {};
+    saveCollected();
+    if(currentItem) showGraphicalSummary();
+  }
+});
+
+// Завантаження збережених ресурсів на старті
+loadCollected();
+
 // Початковий клік по першій категорії (щоб одразу показати список)
 const first = menu.querySelector('div[data-category]');
 if (first) first.click();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
