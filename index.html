@@ -243,6 +243,13 @@ input::placeholder, textarea::placeholder {
     background: var(--secondary); 
     color: white;
 }
+.cost-display { 
+    color: var(--accent); 
+    font-size: 22px; 
+    font-weight: 700; 
+    margin: 10px 0;
+    text-align: right;
+}
 
 /* --- MODAL STYLES --- */
 .modal-overlay {
@@ -313,7 +320,7 @@ input::placeholder, textarea::placeholder {
       <i class="ri-revolver-line"></i> Castello Craft
     </div>
     <div class="header-actions">
-      <button class="btn-primary" onclick="app.toggleAdmin()"><i class="ri-hammer-line"></i> Редагувати</button>
+      <button class="btn-primary" onclick="app.toggleAdmin()"><i class="ri-hammer-line"></i> Адміністрування</button>
     </div>
   </header>
 
@@ -334,8 +341,13 @@ input::placeholder, textarea::placeholder {
           <h2 id="dName" style="margin:0; font-size: 26px">Назва</h2>
           <span id="dCat" class="badge">Категорія</span>
         </div>
-        </div>
+      </div>
 
+      <hr class="decorative-hr">
+      
+      <h3 class="section-title"><i class="ri-hand-coin-line"></i> Собівартість предмета</h3>
+      <div id="dCost" class="cost-display"></div>
+      
       <hr class="decorative-hr">
       
       <h3 class="section-title"><i class="ri-tools-line"></i> Компоненти для 1 шт.</h3>
@@ -429,6 +441,31 @@ const RECIPES_DATA = {
   ]
 };
 
+// --- ОНОВЛЕНІ ЦІНИ НА БАЗОВІ РЕСУРСИ (Собівартість) ---
+const COST_PRICES = {
+    // Вхідні дані користувача
+    "Злиток золота": 200, // ОНОВЛЕНО
+    "Злиток Срібла": 200, // ОНОВЛЕНО
+    "Злиток латуні": 60,
+    "Злиток сталі": 30,
+    "Злиток заліза": 20,
+    "Злиток міді": 20,
+    "Злиток цинку": 20,
+    "Злиток свинцю": 20,
+    "Вугілля": 1,
+    "Дерево": 0,
+    "Глина": 0,
+    "Тканина": 0, 
+
+    // Всі руди не рахуємо (ціна 0)
+    "Залізна руда": 0, "Золота руда": 0, "Мідна руда": 0, 
+    "Свинцева руда": 0, "Срібна руда": 0, "Цинкова руда": 0,
+    
+    // Собівартість Форми: 5 Вугілля + 5 Глина = 5 * $1 + 0 = $5.
+    "Форма з глини": 5, 
+};
+
+
 let DB = JSON.parse(localStorage.getItem('castello_db')) || RECIPES_DATA;
 let ACTIVE_ID = null;
 
@@ -474,16 +511,41 @@ const calc = {
       stepStrictIngot(resources);
       const finalIngots = {};
       for(const [k, v] of Object.entries(ingotTotals)) {
-          finalIngots[k] = Math.ceil(v);
+          // Якщо злиток має пряму ціну, ми його залишаємо в ingotTotals.
+          if (COST_PRICES[k] !== undefined && COST_PRICES[k] > 0) {
+             finalIngots[k] = Math.ceil(v);
+          } 
+          // Інакше (це руда, дерево, або форма з глини), він повинен бути розрахований через baseTotals,
+          // тому ми його тут не включаємо, щоб уникнути подвійного підрахунку.
       }
       
       stepStrictBase(resources);
       const finalBase = {};
       for(const [k, v] of Object.entries(baseTotals)) {
+          // baseTotals включає всі кінцеві ресурси (сировину, форми, вугілля)
           finalBase[k] = Math.ceil(v);
       }
       
       return { ingotTotals: finalIngots, baseTotals: finalBase };
+  },
+  
+  // Розрахунок собівартості
+  calculateTotalCost(ingotTotals, baseTotals) {
+      let totalCost = 0;
+      
+      // 1. Рахуємо ціну злитків (ті, що мають пряму ціну і не є сировиною, тобто у COST_PRICES > 0)
+      for(const [k, v] of Object.entries(ingotTotals)) {
+          const cost = COST_PRICES[k] || 0;
+          totalCost += v * cost;
+      }
+      
+      // 2. Рахуємо ціну сировини (базові матеріали, руди, вугілля, форми, дерево, тканина)
+      for(const [k, v] of Object.entries(baseTotals)) {
+          const cost = COST_PRICES[k] || 0;
+          totalCost += v * cost;
+      }
+      
+      return totalCost;
   }
 };
 
@@ -544,10 +606,16 @@ const app = {
     }
     const totals = calc.analyzeStrict(combinedRes); 
     
+    // 3. Розрахунок собівартості
+    const totalCost = calc.calculateTotalCost(totals.ingotTotals, totals.baseTotals);
+    document.getElementById('dCost').textContent = `$${totalCost.toFixed(0)}`; 
+    
+    // 4. Вивід злитків
     document.getElementById('dIngots').innerHTML = Object.entries(totals.ingotTotals).sort().map(([k,v]) => `
       <div class="res-card"><span>${k}</span> <span class="res-val">${v}</span></div>
     `).join('');
     
+    // 5. Вивід сировини
     document.getElementById('dBase').innerHTML = Object.entries(totals.baseTotals).sort().map(([k,v]) => `
       <div class="res-card"><span>${k}</span> <span class="res-val">${v}</span></div>
     `).join('');
@@ -576,10 +644,9 @@ const app = {
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2000);
   }
-  // ВИДАЛЕНО: exportData() та importData()
 };
 
-/* --- ADMIN (без змін) --- */
+/* --- ADMIN --- */
 const admin = {
     load(id) {
         const r = DB.recipes.find(x => x.id === id);
@@ -608,14 +675,17 @@ const admin = {
         });
 
         let r = null;
+        // Перевіряємо, чи ми редагуємо існуючий
         if(ACTIVE_ID && !document.getElementById('btnDelete').style.display.includes('none')) {
              r = DB.recipes.find(x => x.id === ACTIVE_ID);
         }
 
         if(r) {
+            // Редагування існуючого
             r.name = name; r.cat = cat; r.resources = resources;
             app.showToast('Оновлено');
         } else {
+            // Створення нового
             const newId = Date.now();
             DB.recipes.push({ id: newId, name, cat, resources });
             app.showToast('Створено');
@@ -641,6 +711,7 @@ app.init();
 </script>
 </body>
 </html>
+
 
 
 
