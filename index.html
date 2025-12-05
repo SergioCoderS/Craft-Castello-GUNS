@@ -29,14 +29,13 @@
 body {
   margin: 0;
   font-family: var(--font-title);
-  /* ПОРАДА: Змініть посилання на власне для ідеального фону */
   background: var(--bg-dark) url('https://i.imgur.com/99ezPzT.png') fixed no-repeat center center/cover; 
   color: var(--text-main);
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+  text-shadow: 0 0 1px var(--bg-dark); 
 }
 
 /* --- LAYOUT --- */
@@ -156,6 +155,11 @@ input, select, textarea {
   transition: border-color 0.2s;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
+/* Стилізація плейсхолдерів */
+input::placeholder, textarea::placeholder {
+  color: rgba(195, 154, 107, 0.7); 
+  font-style: italic;
+}
 
 /* --- LIST ITEMS --- */
 .recipe-item {
@@ -196,6 +200,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); backgro
     color: var(--accent); 
     font-size: 26px; 
     text-transform: uppercase;
+}
+/* Декоративний роздільник */
+.decorative-hr {
+  border: none;
+  height: 2px;
+  background-color: var(--secondary); 
+  width: 100%;
+  margin: 16px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 /* --- RESOURCES GRID --- */
@@ -300,12 +313,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); backgro
       <i class="ri-revolver-line"></i> Castello Craft
     </div>
     <div class="header-actions">
-      <button class="btn-ghost btn-icon" onclick="app.exportData()" title="Експорт JSON"><i class="ri-download-line"></i></button>
-      <label class="btn-ghost btn-icon" title="Імпорт JSON" style="cursor: pointer; margin:0">
-        <i class="ri-upload-line"></i>
-        <input type="file" id="importFile" hidden onchange="app.importData(this)">
-      </label>
-      <button class="btn-primary" onclick="app.toggleAdmin()"><i class="ri-hammer-line"></i> Майстерня</button>
+      <button class="btn-primary" onclick="app.toggleAdmin()"><i class="ri-hammer-line"></i> Редагувати</button>
     </div>
   </header>
 
@@ -326,12 +334,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); backgro
           <h2 id="dName" style="margin:0; font-size: 26px">Назва</h2>
           <span id="dCat" class="badge">Категорія</span>
         </div>
-        <button class="btn-primary" id="btnAddToCart">
-          <i class="ri-add-line"></i> Додати
-        </button>
-      </div>
+        </div>
 
-      <hr style="border-color:var(--border); width:100%; margin: 16px 0">
+      <hr class="decorative-hr">
       
       <h3 class="section-title"><i class="ri-tools-line"></i> Компоненти для 1 шт.</h3>
       <div id="dResources" class="res-grid"></div>
@@ -381,7 +386,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); backgro
 <div id="toast"><i class="ri-checkbox-circle-line"></i> <span>Message</span></div>
 
 <script>
-/* --- ДАНІ З РЕЦЕПТАМИ ТА ЛОГІКА РОЗРАХУНКУ (ЗБЕРЕЖЕНО) --- */
+/* --- ДАНІ З РЕЦЕПТАМИ ТА ЛОГІКА РОЗРАХУНКУ --- */
 const RECIPES_DATA = {
   ingots: {
     "Злиток заліза": {"Вугілля":5,"Залізна руда":10,"Форма з глини":1},
@@ -425,8 +430,6 @@ const RECIPES_DATA = {
 };
 
 let DB = JSON.parse(localStorage.getItem('castello_db')) || RECIPES_DATA;
-// CART залишаємо для прихованого обліку, якщо користувач захоче експортувати список
-let CART = JSON.parse(localStorage.getItem('castello_cart') || '[]'); 
 let ACTIVE_ID = null;
 
 const calc = {
@@ -489,7 +492,6 @@ const app = {
   init() {
     this.renderCats();
     this.renderList();
-    // cart.render() видалено
   },
 
   renderCats() {
@@ -549,9 +551,6 @@ const app = {
     document.getElementById('dBase').innerHTML = Object.entries(totals.baseTotals).sort().map(([k,v]) => `
       <div class="res-card"><span>${k}</span> <span class="res-val">${v}</span></div>
     `).join('');
-
-    // Кнопка "Додати" тепер просто додає 1 шт. в прихований кошик
-    document.getElementById('btnAddToCart').onclick = () => cart.add(id);
     
     if(!document.getElementById('adminModal').classList.contains('hidden')) admin.load(id);
   },
@@ -576,51 +575,8 @@ const app = {
     t.querySelector('span').innerText = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2000);
-  },
-  
-  exportData() {
-    // Експорт бази даних
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB));
-    const node = document.createElement('a');
-    node.setAttribute("href", dataStr);
-    node.setAttribute("download", "castello_recipes.json");
-    document.body.appendChild(node);
-    node.click();
-    node.remove();
-  },
-  
-  importData(input) {
-    const file = input.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            DB = JSON.parse(e.target.result);
-            app.saveDB();
-            app.init();
-            app.showToast('Дані імпортовано');
-        } catch(err) { alert('Помилка файлу'); }
-    };
-    reader.readAsText(file);
-    input.value = '';
   }
-};
-
-/* --- CART (Тільки для внутрішнього обліку) --- */
-const cart = {
-  save() {
-    localStorage.setItem('castello_cart', JSON.stringify(CART));
-  },
-  
-  add(id) {
-    const existing = CART.find(x => x.id === id);
-    if (existing) existing.qty++;
-    else CART.push({ id, qty: 1 });
-    this.save();
-    app.showToast(`Додано 1 шт. у план крафту.`);
-  }
-  
-  // Функції відображення та копіювання видалено
+  // ВИДАЛЕНО: exportData() та importData()
 };
 
 /* --- ADMIN (без змін) --- */
@@ -685,6 +641,7 @@ app.init();
 </script>
 </body>
 </html>
+
 
 
 
