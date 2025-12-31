@@ -683,8 +683,65 @@ input::placeholder, textarea::placeholder {
   }
   
   .panel-l {
-    flex: 0 0 30vh;
-    max-height: 30vh;
+    flex: 0 0 100%;
+    max-height: none;
+    border-bottom: none;
+    border-right: none;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .panel-l.hidden-mobile {
+    transform: translateX(-100%);
+  }
+  
+  .panel-m {
+    flex: 1;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+  }
+  
+  .panel-m.show-mobile {
+    transform: translateX(0);
+  }
+  
+  .mobile-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  
+  .mobile-nav-btn {
+    flex: 1;
+    padding: 8px;
+    font-size: 11px;
+    text-align: center;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .mobile-nav-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--primary);
   }
   
   .controls {
@@ -1036,6 +1093,10 @@ input::placeholder, textarea::placeholder {
   </header>
 
   <aside class="panel panel-l">
+    <div class="mobile-nav" style="display: none;">
+      <button class="mobile-nav-btn active" id="navList">📋 Список</button>
+      <button class="mobile-nav-btn" id="navDetails">📄 Деталі</button>
+    </div>
     <div class="controls">
       <div style="position: relative; display: flex; align-items: center;">
         <input id="search" placeholder="Пошук..." style="flex: 1;">
@@ -1793,26 +1854,46 @@ if (isTouchDevice()) {
   document.head.appendChild(style);
 }
 
+/* Мобільна навігація (перемикання між списком і деталями) */
+if (window.innerWidth <= 768) {
+  const mobileNav = document.querySelector('.mobile-nav');
+  const panelL = document.querySelector('.panel-l');
+  const panelM = document.querySelector('.panel-m');
+  const navList = document.getElementById('navList');
+  const navDetails = document.getElementById('navDetails');
+  
+  if (mobileNav && panelL && panelM) {
+    mobileNav.style.display = 'flex';
+    
+    const switchToList = () => {
+      panelL.classList.remove('hidden-mobile');
+      panelM.classList.remove('show-mobile');
+      navList.classList.add('active');
+      navDetails.classList.remove('active');
+    };
+    
+    const switchToDetails = () => {
+      panelL.classList.add('hidden-mobile');
+      panelM.classList.add('show-mobile');
+      navList.classList.remove('active');
+      navDetails.classList.add('active');
+    };
+    
+    navList.addEventListener('click', switchToList);
+    navDetails.addEventListener('click', switchToDetails);
+    
+    // При виборі рецепту автоматично перейти на деталі
+    const originalSelect = app.select;
+    app.select = function(id) {
+      originalSelect.call(this, id);
+      if (window.innerWidth <= 768) {
+        switchToDetails();
+      }
+    };
+  }
+}
+
 app.init();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
