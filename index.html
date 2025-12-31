@@ -131,6 +131,13 @@ header {
   text-decoration: underline;
 }
 
+/* --- MOBILE NAV --- */
+@media (min-width: 769px) {
+  .mobile-nav {
+    display: none !important;
+  }
+}
+
 /* --- CONTROLS --- */
 .controls {
   display: flex;
@@ -666,15 +673,21 @@ input::placeholder, textarea::placeholder {
 @media (max-width: 768px) {
   body {
     height: 100vh;
+    overflow: hidden;
   }
   
   .app-container {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    grid-template-columns: none;
+    grid-template-rows: none;
   }
   
   header {
     padding: 0 10px;
     height: 50px;
+    flex-shrink: 0;
   }
   
   .panel {
@@ -683,60 +696,52 @@ input::placeholder, textarea::placeholder {
   }
   
   .panel-l {
-    flex: 0 0 100%;
-    max-height: none;
-    border-bottom: none;
-    border-right: none;
-    position: absolute;
-    top: 50px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 100;
-    transform: translateX(0);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: none;
   }
   
-  .panel-l.hidden-mobile {
-    transform: translateX(-100%);
-  }
-  
-  .panel-m {
+  .panel-l.active-tab {
+    display: flex;
     flex: 1;
-    position: absolute;
-    top: 50px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 99;
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
   }
   
-  .panel-m.show-mobile {
-    transform: translateX(0);
+  .panel-m {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .panel-m.active-tab {
+    display: flex;
   }
   
   .mobile-nav {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
+    display: flex !important;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+    flex-shrink: 0;
   }
   
   .mobile-nav-btn {
     flex: 1;
-    padding: 8px;
-    font-size: 11px;
+    padding: 12px;
+    font-size: 12px;
     text-align: center;
     border: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .mobile-nav-btn:active {
+    background: rgba(195, 154, 107, 0.1);
   }
   
   .mobile-nav-btn.active {
@@ -749,6 +754,7 @@ input::placeholder, textarea::placeholder {
   }
   
   .controls > input,
+  .controls > div > input,
   .sort-group select,
   .qty-group input {
     font-size: 14px;
@@ -817,6 +823,7 @@ input::placeholder, textarea::placeholder {
   .author-footer {
     font-size: 10px;
     padding: 8px 0;
+    margin-top: auto;
   }
   
   #toast {
@@ -880,6 +887,7 @@ input::placeholder, textarea::placeholder {
   }
   
   .controls > input,
+  .controls > div > input,
   input[type="number"],
   select {
     padding: 6px;
@@ -930,6 +938,11 @@ input::placeholder, textarea::placeholder {
     bottom: 8px;
     right: 5%;
     font-size: 11px;
+  }
+  
+  .mobile-nav-btn {
+    font-size: 11px;
+    padding: 10px;
   }
 }
 
@@ -1855,45 +1868,49 @@ if (isTouchDevice()) {
 }
 
 /* Мобільна навігація (перемикання між списком і деталями) */
-if (window.innerWidth <= 768) {
+const setupMobileNav = () => {
+  if (window.innerWidth > 768) return;
+  
   const mobileNav = document.querySelector('.mobile-nav');
   const panelL = document.querySelector('.panel-l');
   const panelM = document.querySelector('.panel-m');
   const navList = document.getElementById('navList');
   const navDetails = document.getElementById('navDetails');
   
-  if (mobileNav && panelL && panelM) {
-    mobileNav.style.display = 'flex';
-    
-    const switchToList = () => {
-      panelL.classList.remove('hidden-mobile');
-      panelM.classList.remove('show-mobile');
-      navList.classList.add('active');
-      navDetails.classList.remove('active');
-    };
-    
-    const switchToDetails = () => {
-      panelL.classList.add('hidden-mobile');
-      panelM.classList.add('show-mobile');
-      navList.classList.remove('active');
-      navDetails.classList.add('active');
-    };
-    
-    navList.addEventListener('click', switchToList);
-    navDetails.addEventListener('click', switchToDetails);
-    
-    // При виборі рецепту автоматично перейти на деталі
-    const originalSelect = app.select;
-    app.select = function(id) {
-      originalSelect.call(this, id);
-      if (window.innerWidth <= 768) {
-        switchToDetails();
-      }
-    };
-  }
-}
+  if (!mobileNav || !panelL || !panelM || !navList || !navDetails) return;
+  
+  const switchToList = () => {
+    panelL.classList.add('active-tab');
+    panelM.classList.remove('active-tab');
+    navList.classList.add('active');
+    navDetails.classList.remove('active');
+  };
+  
+  const switchToDetails = () => {
+    panelL.classList.remove('active-tab');
+    panelM.classList.add('active-tab');
+    navList.classList.remove('active');
+    navDetails.classList.add('active');
+  };
+  
+  navList.addEventListener('click', switchToList);
+  navDetails.addEventListener('click', switchToDetails);
+  
+  // При виборі рецепту автоматично перейти на деталі
+  const originalSelect = app.select;
+  app.select = function(id) {
+    originalSelect.call(this, id);
+    if (window.innerWidth <= 768) {
+      setTimeout(() => switchToDetails(), 50);
+    }
+  };
+  
+  // По замовченню показуємо список
+  switchToList();
+};
 
 app.init();
+setupMobileNav();
 </script>
 </body>
 </html>
