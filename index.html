@@ -140,7 +140,7 @@ button {
     color: var(--danger);
     border-color: var(--danger);
 }
-.btn-danger:hover { background: var(--danger); color: white; }
+.btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
 /* Покращено контрастність вводу */
 input, select, textarea {
@@ -567,8 +567,9 @@ const app = {
     const list = document.getElementById('recipeList');
     
     const filtered = DB.recipes.filter(r => {
-      const txt = (r.name + JSON.stringify(r.resources)).toLowerCase();
-      return (!cat || r.cat === cat) && (!q || txt.includes(q));
+      const catMatch = !cat || r.cat === cat;
+      const nameMatch = !q || r.name.toLowerCase().includes(q);
+      return catMatch && nameMatch;
     });
 
     list.innerHTML = filtered.map(r => `
@@ -662,7 +663,7 @@ const admin = {
         document.getElementById('btnDelete').style.display = 'none';
     },
     save() {
-        const name = document.getElementById('admName').value;
+        const name = document.getElementById('admName').value?.trim();
         const cat = document.getElementById('admCat').value;
         const resText = document.getElementById('admRes').value;
         
@@ -670,15 +671,16 @@ const admin = {
         
         const resources = {};
         resText.split('\n').forEach(line => {
-            const [k,v] = line.split(':');
-            if(k && v) resources[k.trim()] = parseFloat(v.trim());
+            const [k, v] = line.split(':');
+            const key = k?.trim();
+            const val = parseFloat(v?.trim());
+            if(key && !isNaN(val) && val > 0) resources[key] = val;
         });
 
-        let r = null;
-        // Перевіряємо, чи ми редагуємо існуючий
-        if(ACTIVE_ID && !document.getElementById('btnDelete').style.display.includes('none')) {
-             r = DB.recipes.find(x => x.id === ACTIVE_ID);
-        }
+        if(Object.keys(resources).length === 0) return app.showToast('Додайте хоча б один ресурс');
+
+        const isEditing = ACTIVE_ID && document.getElementById('btnDelete').style.display !== 'none';
+        let r = isEditing ? DB.recipes.find(x => x.id === ACTIVE_ID) : null;
 
         if(r) {
             // Редагування існуючого
@@ -711,6 +713,7 @@ app.init();
 </script>
 </body>
 </html>
+
 
 
 
