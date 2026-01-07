@@ -1106,7 +1106,7 @@ input::placeholder, textarea::placeholder {
   </header>
 
   <aside class="panel panel-l">
-    <div class="mobile-nav" style="display: none;">
+    <div class="mobile-nav" style="display:'flex';">
       <button class="mobile-nav-btn active" id="navList">📋 Список</button>
       <button class="mobile-nav-btn" id="navDetails">📄 Деталі</button>
     </div>
@@ -1160,7 +1160,9 @@ input::placeholder, textarea::placeholder {
       <h3 class="section-title" style="margin-top:25px"><i class="ri-bar-chart-box-line"></i> Потрібні злитки </h3>
       <div id="dIngots" class="res-grid"></div>
       
-      <h3 class="section-title" style="margin-top:25px"><i class="ri-stack-line"></i> Початкова сировина </h3>
+      <h3 class="section-title" style="margin-top:25px">
+      <i class="ri-stack-line"></i> Початкова сировина
+      </h3>
       <div id="dBase" class="res-grid"></div>
 
     </div>
@@ -1305,7 +1307,7 @@ const utils = {
       DEBOUNCE_TIMER = setTimeout(() => fn(...args), delay);
     };
   },
-  
+
   saveToHistory() {
     HISTORY = HISTORY.slice(0, HISTORY_INDEX + 1);
     HISTORY.push(JSON.parse(JSON.stringify(DB)));
@@ -1315,7 +1317,7 @@ const utils = {
       HISTORY_INDEX--;
     }
   },
-  
+
   undo() {
     if (HISTORY_INDEX > 0) {
       HISTORY_INDEX--;
@@ -1326,7 +1328,7 @@ const utils = {
       app.showToast('↶ Скасовано');
     }
   },
-  
+
   redo() {
     if (HISTORY_INDEX < HISTORY.length - 1) {
       HISTORY_INDEX++;
@@ -1337,148 +1339,131 @@ const utils = {
       app.showToast('↷ Повторено');
     }
   },
-  
+
   validateResourcesText(text) {
-    const lines = text.trim().split('\n').filter(l => l.trim());
+    const lines = text.trim().split('\n').filter(Boolean);
     const resources = {};
     const errors = [];
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-      
-      const [key, val] = line.split(':').map(s => s.trim());
-      if (!key) {
-        errors.push(`Рядок ${i + 1}: порожне ім'я ресурсу`);
-        continue;
+
+    lines.forEach((line, i) => {
+      const [k, v] = line.split(':').map(s => s.trim());
+      const qty = parseFloat(v);
+      if (!k || isNaN(qty) || qty <= 0) {
+        errors.push(`Рядок ${i + 1}: помилка`);
+      } else {
+        resources[k] = qty;
       }
-      
-      const value = parseFloat(val);
-      if (isNaN(value) || value <= 0) {
-        errors.push(`Рядок ${i + 1}: невірна кількість "${val}"`);
-        continue;
-      }
-      
-      resources[key] = value;
-    }
-    
+    });
+
     return { resources, errors };
   },
 
-  search(array, query, searchFn) {
+  search(array, query, fn) {
     if (!query) return array;
-    return array.filter(item => searchFn(item, query));
+    return array.filter(item => fn(item, query));
   },
 
   sort(array, field) {
     const copy = [...array];
-    switch(field) {
-      case 'name':
-        return copy.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+
+    switch (field) {
       case 'price-asc':
-        return copy.sort((a, b) => {
-          const { ingotTotals: iA, baseTotals: bA } = calc.analyzeStrict(a.resources);
-          const { ingotTotals: iB, baseTotals: bB } = calc.analyzeStrict(b.resources);
-          const costA = calc.calculateTotalCost(iA, bA);
-          const costB = calc.calculateTotalCost(iB, bB);
-          return costA - costB;
-        });
+        return copy.sort((a, b) =>
+          calc.calculateCost(a.resources) -
+          calc.calculateCost(b.resources)
+        );
+
       case 'price-desc':
-        return copy.sort((a, b) => {
-          const { ingotTotals: iA, baseTotals: bA } = calc.analyzeStrict(a.resources);
-          const { ingotTotals: iB, baseTotals: bB } = calc.analyzeStrict(b.resources);
-          const costA = calc.calculateTotalCost(iA, bA);
-          const costB = calc.calculateTotalCost(iB, bB);
-          return costB - costA;
-        });
+        return copy.sort((a, b) =>
+          calc.calculateCost(b.resources) -
+          calc.calculateCost(a.resources)
+        );
+
       case 'category':
         return copy.sort((a, b) => a.cat.localeCompare(b.cat, 'uk'));
+
       default:
-        return copy;
+        return copy.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
     }
   }
 };
+
 
 const calc = {
-  add(target, key, qty) { target[key] = (target[key] || 0) + qty; },
-  
-  // Універсальна функція рекурсивного аналізу
-  stepRecursive(obj, target, mult=1, depth=0, skipIngots=false) {
-    if(depth > CONFIG.MAX_RECURSION_DEPTH) return;
-    for (const [k, v] of Object.entries(obj)) {
-      const calculatedQty = v * mult;
-      if (DB.parts[k]) {
-        const requiredQty = Math.ceil(calculatedQty);
-        this.stepRecursive(DB.parts[k], target, requiredQty, depth+1, skipIngots);
-      } else if (!skipIngots && DB.ingots[k]) {
-        const requiredQty = Math.ceil(calculatedQty);
-        this.stepRecursive(DB.ingots[k], target, requiredQty, depth+1, skipIngots);
-      } else {
-        this.add(target, k, calculatedQty);
+  add(target, key, qty) {
+    target[key] = (target[key] || 0) + qty;
+  },
+
+  collectIngots(resources, result, mult = 1, depth = 0) {
+    if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
+
+    for (const [key, qty] of Object.entries(resources)) {
+      const total = qty * mult; // ❗ БЕЗ Math.ceil
+
+      // 🧱 PART — розкладаємо далі
+      if (DB.parts[key]) {
+        this.collectIngots(DB.parts[key], result, total, depth + 1);
+        continue;
+      }
+
+      // 🔒 ЗЛИТОК — додаємо (ПОКИ БЕЗ округлення)
+      if (DB.ingots[key] && COST_PRICES[key] > 0) {
+        this.add(result, key, total);
       }
     }
   },
-  
-  // СУВОРИЙ НЕДРОБОВИЙ АНАЛІЗ
-  analyzeStrict(resources) {
-    const ingotTotals = {};
-    const baseTotals = {};
-    
-    // Два окремі проходи для коректного розділення
-    // 1. Розрахунок прямих злитків (без рекурсії в DB.ingots)
-    this.stepRecursive(resources, ingotTotals, 1, 0, true);
-    
-    // 2. Розрахунок базової сировини (з рекурсією в DB.ingots)
-    this.stepRecursive(resources, baseTotals, 1, 0, false);
-    
-    // Фільтруємо - ingotTotals містить тільки злитки з прямою ціною
-    const finalIngots = {};
-    for(const [k, v] of Object.entries(ingotTotals)) {
-      if (COST_PRICES[k] !== undefined && COST_PRICES[k] > 0 && DB.ingots[k]) {
-        finalIngots[k] = Math.ceil(v);
-      }
+
+collectBaseResources(resources, result, mult = 1, depth = 0) {
+  if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
+
+  for (const [key, qty] of Object.entries(resources)) {
+    const total = qty * mult;
+
+    // 🧱 PART
+    if (DB.parts[key]) {
+      this.collectBaseResources(DB.parts[key], result, total, depth + 1);
+      continue;
     }
-    
-    // Фільтруємо - baseTotals містить сировину та лишні ресурси
-    const finalBase = {};
-    for(const [k, v] of Object.entries(baseTotals)) {
-      finalBase[k] = Math.ceil(v);
+
+    // 🔩 ЗЛИТОК → розкладаємо в сировину
+    if (DB.ingots[key]) {
+      this.collectBaseResources(DB.ingots[key], result, total, depth + 1);
+      continue;
     }
-    
-    return { ingotTotals: finalIngots, baseTotals: finalBase };
-  },
-  
-  // Розрахунок собівартості
-  calculateTotalCost(ingotTotals, baseTotals) {
-    let totalCost = 0;
-    
-    // 1. Рахуємо ціну злитків
-    for(const [k, v] of Object.entries(ingotTotals)) {
-      const cost = COST_PRICES[k] || 0;
-      totalCost += v * cost;
+
+    // 🪵 БАЗОВА СИРОВИНА
+    result[key] = (result[key] || 0) + total;
+  }
+},
+
+
+  calculateCost(resources) {
+    const ingots = {};
+    this.collectIngots(resources, ingots);
+
+    let sum = 0;
+    for (const [k, v] of Object.entries(ingots)) {
+      const rounded = Math.ceil(v); // ✅ ОКРУГЛЮЄМО ТУТ
+      sum += rounded * COST_PRICES[k];
     }
-    
-    // 2. Рахуємо ціну сировини
-    for(const [k, v] of Object.entries(baseTotals)) {
-      const cost = COST_PRICES[k] || 0;
-      totalCost += v * cost;
-    }
-    
-    return totalCost;
+
+    return sum;
   }
 };
 
+
+
+
+/* --- APP CONTROLLER --- */
 /* --- APP CONTROLLER --- */
 const app = {
   init() {
-    this.renderCats();
-    this.renderList();
-    this.loadTheme();
-    utils.saveToHistory();
-    
-    // Пошук по компонентам
-    this.setupComponentSearch();
-  },
+  app.renderCats();
+  app.renderList();
+  utils.saveToHistory();
+  app.setupComponentSearch();
+},
+
 
   renderCats() {
     const catIcons = {
@@ -1489,29 +1474,30 @@ const app = {
       'Інструменти': '🔨',
       'Інше': '📦'
     };
-    const cats = [...new Set(DB.recipes.map(r => r.cat))].sort((a, b) => a.localeCompare(b, 'uk'));
-    document.getElementById('catFilter').innerHTML = '<option value="">Всі категорії</option>' + cats.map(c => `<option value="${c}">${catIcons[c] || '•'} ${c}</option>`).join('');
+    const cats = [...new Set(DB.recipes.map(r => r.cat))]
+      .sort((a, b) => a.localeCompare(b, 'uk'));
+
+    document.getElementById('catFilter').innerHTML =
+      '<option value="">Всі категорії</option>' +
+      cats.map(c => `<option value="${c}">${catIcons[c] || '•'} ${c}</option>`).join('');
   },
 
   renderList() {
     const q = document.getElementById('search').value.toLowerCase();
     const cat = document.getElementById('catFilter').value;
     const sortBy = document.getElementById('sortFilter').value || 'name';
-    
+
     let filtered = DB.recipes.filter(r => {
       const catMatch = !cat || r.cat === cat;
       const nameMatch = !q || r.name.toLowerCase().includes(q);
       return catMatch && nameMatch;
     });
-    
+
     filtered = utils.sort(filtered, sortBy);
 
     const list = document.getElementById('recipeList');
-    if (!list) {
-      console.error('Element recipeList not found');
-      return;
-    }
-    
+    if (!list) return;
+
     list.innerHTML = filtered.map(r => `
       <div class="recipe-item ${ACTIVE_ID === r.id ? 'active' : ''}" data-id="${r.id}">
         <div class="item-info">
@@ -1519,162 +1505,101 @@ const app = {
           <span>${r.cat}</span>
         </div>
       </div>
-    `).join('') || '<div style="padding:20px; text-align:center; color:var(--text-muted)">Рецептів не знайдено</div>';
-    
-    // Event delegation для рецептів
+    `).join('');
+
     list.querySelectorAll('.recipe-item[data-id]').forEach(el => {
-      el.addEventListener('click', () => app.select(parseInt(el.dataset.id)));
+      el.addEventListener('click', () => this.select(+el.dataset.id));
     });
   },
 
   select(id) {
     ACTIVE_ID = id;
-    this.renderList(); 
-    
-    const r = DB.recipes.find(x => x.id === id);
-    if (!r) {
-      console.warn('Recipe not found:', id);
-      return;
-    }
+    this.renderList();
 
-    const detailContent = document.getElementById('detailContent');
-    const emptyState = document.getElementById('emptyState');
-    
-    if (!detailContent || !emptyState) {
-      console.error('Detail elements not found');
-      return;
-    }
-    
-    emptyState.classList.add('hidden');
-    detailContent.style.display = 'block';
-    
+    const r = DB.recipes.find(x => x.id === id);
+    if (!r) return;
+
+    document.getElementById('emptyState')?.classList.add('hidden');
+    document.getElementById('detailContent').style.display = 'block';
+
     document.getElementById('dName').textContent = r.name;
     document.getElementById('dCat').textContent = r.cat;
-    
-    const qtyInput = document.getElementById('recipeQty');
-    if (qtyInput) {
-      qtyInput.value = 1;
-    }
-    
+    document.getElementById('recipeQty').value = 1;
+
     this.updateRecipeDisplay(r, 1);
   },
-  
+
   updateRecipeDisplay(recipe, qty) {
-    if (!recipe) {
-      console.error('Recipe not provided');
-      return;
-    }
-    
+    if (!recipe) return;
+
     const qtyNum = parseInt(qty) || 1;
-    if (qtyNum < 1 || qtyNum > 100) {
-      console.warn('Invalid qty:', qtyNum);
-      return;
-    }
-    
-    // 1. Компоненти для 1 шт.
+
+    // Компоненти
     const dResources = document.getElementById('dResources');
     if (dResources) {
-      dResources.innerHTML = Object.entries(recipe.resources).map(([k,v]) => `
-        <div class="res-card"><span>${k}</span> <span class="res-val">${(v * qtyNum).toFixed(2)}</span></div>
+      dResources.innerHTML = Object.entries(recipe.resources).map(([k, v]) => `
+        <div class="res-card">
+          <span>${k}</span>
+          <span class="res-val">${(v * qtyNum).toFixed(2)}</span>
+        </div>
       `).join('');
     }
 
-    // 2. Розрахунок
-    const combinedRes = {};
-    for(const [k, v] of Object.entries(recipe.resources)) {
-      combinedRes[k] = v * qtyNum;
-    }
-    const { ingotTotals, baseTotals } = calc.analyzeStrict(combinedRes); 
-    
-    // 3. Собівартість
-    const totalCost = calc.calculateTotalCost(ingotTotals, baseTotals);
-    const dCost = document.getElementById('dCost');
-    if (dCost) {
-      dCost.textContent = `$${totalCost.toFixed(0)}`; 
-    }
-    
-    // 4. Злитки
-    const dIngots = document.getElementById('dIngots');
-    if (dIngots) {
-      dIngots.innerHTML = Object.entries(ingotTotals).sort().map(([k,v]) => `
-        <div class="res-card"><span>${k}</span> <span class="res-val">${Math.ceil(v)}</span></div>
-      `).join('');
-    }
-    
-    // 5. Сировина
-    const dBase = document.getElementById('dBase');
-    if (dBase) {
-      dBase.innerHTML = Object.entries(baseTotals).sort().map(([k,v]) => `
-        <div class="res-card"><span>${k}</span> <span class="res-val">${Math.ceil(v)}</span></div>
-      `).join('');
-    }
-    
-    const adminModal = document.getElementById('adminModal');
-    if(adminModal && !adminModal.classList.contains('hidden')) {
+  
+    // 🔢 Розрахунок
+const combinedRes = {};
+for (const [k, v] of Object.entries(recipe.resources)) {
+  combinedRes[k] = v * qtyNum;
+}
+
+// 🔩 Злитки (і для ціни, і для UI)
+const ingotTotals = {};
+calc.collectIngots(combinedRes, ingotTotals);
+
+// 🪨 БАЗОВА СИРОВИНА
+const baseTotals = {};
+calc.collectBaseResources(combinedRes, baseTotals);
+
+// 🔩 UI: злитки
+const dIngots = document.getElementById('dIngots');
+if (dIngots) {
+  dIngots.innerHTML = Object.entries(ingotTotals)
+    .sort()
+    .map(([k, v]) => `
+      <div class="res-card">
+        <span>${k}</span>
+        <span class="res-val">${Math.ceil(v)}</span>
+      </div>
+    `)
+    .join('');
+}
+const dBase = document.getElementById('dBase');
+if (dBase) {
+  dBase.innerHTML = Object.entries(baseTotals)
+    .sort((a, b) => a[0].localeCompare(b[0], 'uk'))
+    .map(([k, v]) => `
+      <div class="res-card">
+        <span>${k}</span>
+        <span class="res-val">${Math.ceil(v)}</span>
+      </div>
+    `)
+    .join('') || '<div class="muted">Немає даних</div>';
+}
+
+
+
+    // Собівартість
+    document.getElementById('dCost').textContent =
+      calc.calculateCost(combinedRes);
+
+    // Admin sync
+    if (!document.getElementById('adminModal')?.classList.contains('hidden')) {
       admin.load(ACTIVE_ID);
     }
-  },
-
-  saveDB() {
-    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(DB));
-    utils.saveToHistory();
-    this.renderList();
-    app.showToast('Базу даних оновлено');
-  },
-
-  toggleAdmin() {
-    const modal = document.getElementById('adminModal');
-    modal.classList.toggle('hidden');
-    if(!modal.classList.contains('hidden')) {
-        if(ACTIVE_ID) admin.load(ACTIVE_ID);
-        else admin.reset();
-    }
-  },
-
-  showToast(msg, isError = false) {
-    const t = document.getElementById('toast');
-    t.querySelector('span').innerText = msg;
-    t.classList.toggle('error', isError);
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), CONFIG.TOAST_DURATION);
-  },
-  
-  toggleTheme() {
-    const html = document.documentElement;
-    const isDark = html.classList.contains('light-theme');
-    if (isDark) {
-      html.classList.remove('light-theme');
-      localStorage.setItem(CONFIG.THEME_STORAGE_KEY, 'dark');
-    } else {
-      html.classList.add('light-theme');
-      localStorage.setItem(CONFIG.THEME_STORAGE_KEY, 'light');
-    }
-    this.updateThemeIcon();
-  },
-  
-  loadTheme() {
-    const theme = localStorage.getItem(CONFIG.THEME_STORAGE_KEY) || 'dark';
-    if (theme === 'light') {
-      document.documentElement.classList.add('light-theme');
-    } else {
-      document.documentElement.classList.remove('light-theme');
-    }
-    this.updateThemeIcon();
-  },
-  
-  updateThemeIcon() {
-    const btn = document.getElementById('btnTheme');
-    const isDark = document.documentElement.classList.contains('light-theme');
-    btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
-  },
-  
-  setupComponentSearch() {
-    window.findRecipesWithComponent = (component) => {
-      const results = DB.recipes.filter(r => r.resources[component]);
-      console.log(`Рецепти з ${component}:`, results);
-    };
   }
-};
+}; // ← ОЦЕ КРИТИЧНО! БЕЗ ЦЬОГО БУЛА ПОМИЛКА
+
+
 
 /* --- ADMIN --- */
 const admin = {
@@ -1897,13 +1822,18 @@ const setupMobileNav = () => {
   navDetails.addEventListener('click', switchToDetails);
   
   // При виборі рецепту автоматично перейти на деталі
+  if (!app.__selectWrapped) {
   const originalSelect = app.select;
+
   app.select = function(id) {
     originalSelect.call(this, id);
     if (window.innerWidth <= 768) {
-      setTimeout(() => switchToDetails(), 50);
+      setTimeout(switchToDetails, 50);
     }
   };
+
+  app.__selectWrapped = true;
+}
   
   // По замовченню показуємо список
   switchToList();
