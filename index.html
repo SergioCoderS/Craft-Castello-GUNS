@@ -946,6 +946,22 @@ input::placeholder, textarea::placeholder {
   }
 }
 
+/* --- UTILITY CLASSES --- */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.detail-title {
+  margin: 0;
+  font-size: 26px;
+}
+
+.mobile-nav-hidden {
+  display: none;
+}
+
 /* --- THEME TOGGLE --- */
 :root.light-theme {
   --bg-dark: #f8f8f8;
@@ -1101,12 +1117,13 @@ input::placeholder, textarea::placeholder {
     </div>
     <div class="header-actions">
       <button class="btn-ghost btn-icon" id="btnTheme" title="Перемкнути тему"><i class="ri-sun-line"></i></button>
+      <button class="btn-ghost btn-icon" id="btnPrices" title="Управління цінами"><i class="ri-price-tag-3-line"></i></button>
       <button class="btn-primary" id="btnAdmin"><i class="ri-hammer-line"></i> Адміністрування</button>
     </div>
   </header>
 
   <aside class="panel panel-l">
-    <div class="mobile-nav" style="display:'flex';">
+    <div class="mobile-nav" style="display: flex;">
       <button class="mobile-nav-btn active" id="navList">📋 Список</button>
       <button class="mobile-nav-btn" id="navDetails">📄 Деталі</button>
     </div>
@@ -1152,6 +1169,17 @@ input::placeholder, textarea::placeholder {
       <h3 class="section-title"><i class="ri-hand-coin-line"></i> Собівартість предмета</h3>
       <div id="dCost" class="cost-display">$0</div>
       
+      <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Ваша ціна продажу</label>
+          <div id="dSellPrice" class="cost-display" style="font-size: 24px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" title="Встав ціну в Управління цінами">$0</div>
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Прибуток</label>
+          <div id="dProfit" class="cost-display" style="font-size: 24px; color: var(--success);">$0</div>
+        </div>
+      </div>
+      
       <hr class="decorative-hr">
       
       <h3 class="section-title"><i class="ri-tools-line"></i> Компоненти для 1 шт.</h3>
@@ -1177,6 +1205,102 @@ input::placeholder, textarea::placeholder {
       <div>Forge RP 🔥</div>
     </div>
   </main>
+</div>
+
+<div id="pricesModal" class="modal-overlay hidden">
+  <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+    <div class="modal-header">
+      <h3 class="section-title" style="margin:0"><i class="ri-price-tag-3-line"></i> Управління цінами ресурсів</h3>
+      <button class="btn-ghost btn-icon" id="btnClosePrices"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-content">
+      <h4 class="section-title" style="margin-top: 0;"><i class="ri-file-list-line"></i> Золото та срібло</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток золота</label>
+          <input type="number" class="price-input" data-key="Злиток золота" placeholder="$" min="0">
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток Срібла</label>
+          <input type="number" class="price-input" data-key="Злиток Срібла" placeholder="$" min="0">
+        </div>
+      </div>
+
+      <h4 class="section-title"><i class="ri-tools-line"></i> Основні злитки</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток сталі</label>
+          <input type="number" class="price-input" data-key="Злиток сталі" placeholder="$" min="0">
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток заліза</label>
+          <input type="number" class="price-input" data-key="Злиток заліза" placeholder="$" min="0">
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток латуні</label>
+          <input type="number" class="price-input" data-key="Злиток латуні" placeholder="$" min="0">
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток міді</label>
+          <input type="number" class="price-input" data-key="Злиток міді" placeholder="$" min="0">
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток свинцю</label>
+          <input type="number" class="price-input" data-key="Злиток свинцю" placeholder="$" min="0">
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Злиток цинку</label>
+          <input type="number" class="price-input" data-key="Злиток цинку" placeholder="$" min="0">
+        </div>
+      </div>
+
+      <h4 class="section-title"><i class="ri-fire-line"></i> Сировина</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Вугілля</label>
+          <input type="number" class="price-input" data-key="Вугілля" placeholder="$" min="0" step="0.1">
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Форма з глини</label>
+          <input type="number" class="price-input" data-key="Форма з глини" placeholder="$" min="0">
+        </div>
+      </div>
+
+      <hr class="decorative-hr">
+      
+      <h4 class="section-title"><i class="ri-shopping-cart-2-line"></i> Розрахунок прибутку</h4>
+      
+      <div>
+        <label style="color: var(--text-muted); font-size: 12px;">Оберіть зброю:</label>
+        <select id="profitWeaponSelect" style="width: 100%;">
+          <option value="">-- Виберіть предмет --</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Собівартість</label>
+          <div id="costValue" style="padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; color: var(--accent); font-weight: bold; text-align: center;">$0</div>
+        </div>
+        <div>
+          <label style="color: var(--text-muted); font-size: 12px;">Ваша ціна продажу</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="number" id="sellPrice" placeholder="Введіть ціну продажу" min="0" style="flex: 1;">
+            <button class="btn-primary" id="btnSetPrice" style="padding: 8px 16px; font-size: 14px; white-space: nowrap;">Встановити</button>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 15px; padding: 12px; background: rgba(195, 154, 107, 0.1); border-left: 3px solid var(--primary); border-radius: 4px;">
+        <div style="font-size: 12px; color: var(--text-muted);">💰 Прибуток на одиницю:</div>
+        <div id="profitValue" style="font-size: 24px; font-weight: bold; color: var(--success); text-align: center;">$0</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" id="btnResetPrices">Відновити стандартні ціни</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="adminModal" class="modal-overlay hidden">
@@ -1394,40 +1518,52 @@ const calc = {
     target[key] = (target[key] || 0) + qty;
   },
 
-  collectIngots(resources, result, mult = 1, depth = 0) {
+  collectIngots(resources, result, mult = 1, depth = 0, visited = new Set()) {
     if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
 
     for (const [key, qty] of Object.entries(resources)) {
-      const total = qty * mult; // ❗ БЕЗ Math.ceil
+      // Перевірка циклічних залежностей
+      if (visited.has(key)) continue;
+      
+      const total = qty * mult;
 
       // 🧱 PART — розкладаємо далі
       if (DB.parts[key]) {
-        this.collectIngots(DB.parts[key], result, total, depth + 1);
+        visited.add(key);
+        this.collectIngots(DB.parts[key], result, total, depth + 1, visited);
+        visited.delete(key);
         continue;
       }
 
-      // 🔒 ЗЛИТОК — додаємо (ПОКИ БЕЗ округлення)
+      // 🔒 ЗЛИТОК — додаємо
       if (DB.ingots[key] && COST_PRICES[key] > 0) {
         this.add(result, key, total);
       }
     }
   },
 
-collectBaseResources(resources, result, mult = 1, depth = 0) {
+collectBaseResources(resources, result, mult = 1, depth = 0, visited = new Set()) {
   if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
 
   for (const [key, qty] of Object.entries(resources)) {
+    // Перевірка циклічних залежностей
+    if (visited.has(key)) continue;
+    
     const total = qty * mult;
 
     // 🧱 PART
     if (DB.parts[key]) {
-      this.collectBaseResources(DB.parts[key], result, total, depth + 1);
+      visited.add(key);
+      this.collectBaseResources(DB.parts[key], result, total, depth + 1, visited);
+      visited.delete(key);
       continue;
     }
 
     // 🔩 ЗЛИТОК → розкладаємо в сировину
     if (DB.ingots[key]) {
-      this.collectBaseResources(DB.ingots[key], result, total, depth + 1);
+      visited.add(key);
+      this.collectBaseResources(DB.ingots[key], result, total, depth + 1, visited);
+      visited.delete(key);
       continue;
     }
 
@@ -1439,15 +1575,16 @@ collectBaseResources(resources, result, mult = 1, depth = 0) {
 
   calculateCost(resources) {
     const ingots = {};
-    this.collectIngots(resources, ingots);
+    this.collectIngots(resources, ingots, 1, 0, new Set());
 
     let sum = 0;
     for (const [k, v] of Object.entries(ingots)) {
-      const rounded = Math.ceil(v); // ✅ ОКРУГЛЮЄМО ТУТ
-      sum += rounded * COST_PRICES[k];
+      const rounded = Math.ceil(v);
+      const price = COST_PRICES[k] || 0;
+      sum += rounded * price;
     }
 
-    return sum;
+    return Math.max(0, sum);
   }
 };
 
@@ -1455,14 +1592,12 @@ collectBaseResources(resources, result, mult = 1, depth = 0) {
 
 
 /* --- APP CONTROLLER --- */
-/* --- APP CONTROLLER --- */
 const app = {
   init() {
-  app.renderCats();
-  app.renderList();
-  utils.saveToHistory();
-  app.setupComponentSearch();
-},
+    app.renderCats();
+    app.renderList();
+    utils.saveToHistory();
+  },
 
 
   renderCats() {
@@ -1527,6 +1662,14 @@ const app = {
     document.getElementById('recipeQty').value = 1;
 
     this.updateRecipeDisplay(r, 1);
+    
+    // Синхронізувати вибір у меню ціна
+    const profitWeaponSelect = document.getElementById('profitWeaponSelect');
+    if (profitWeaponSelect) {
+      profitWeaponSelect.value = id;
+      // Також викличемо selectWeapon щоб завантажилася збережена ціна
+      prices.selectWeapon(id);
+    }
   },
 
   updateRecipeDisplay(recipe, qty) {
@@ -1589,87 +1732,150 @@ if (dBase) {
 
 
     // Собівартість
-    document.getElementById('dCost').textContent =
-      calc.calculateCost(combinedRes);
+    document.getElementById('dCost').textContent = `$${calc.calculateCost(combinedRes).toFixed(2)}`;
+
+    // Оновити прибуток на головній панелі якщо є ціна продажу
+    prices.updateMainPanelProfit();
 
     // Admin sync
     if (!document.getElementById('adminModal')?.classList.contains('hidden')) {
       admin.load(ACTIVE_ID);
     }
+  },
+
+  toggleAdmin() {
+    const modal = document.getElementById('adminModal');
+    if (!modal) return;
+    const isHidden = modal.classList.contains('hidden');
+    if (isHidden) {
+      admin.reset();
+      if (ACTIVE_ID) {
+        admin.load(ACTIVE_ID);
+      }
+      modal.classList.remove('hidden');
+    } else {
+      modal.classList.add('hidden');
+    }
+  },
+
+  toggleTheme() {
+    const html = document.documentElement;
+    const isLight = html.classList.toggle('light-theme');
+    localStorage.setItem(CONFIG.THEME_STORAGE_KEY, isLight ? 'light' : 'dark');
+    const icon = document.getElementById('btnTheme')?.querySelector('i');
+    if (icon) {
+      icon.className = isLight ? 'ri-moon-line' : 'ri-sun-line';
+    }
+  },
+
+  saveDB() {
+    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(DB));
+    app.renderList();
+    app.renderCats();
+  },
+
+  showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    const icon = toast.querySelector('i');
+    const span = toast.querySelector('span');
+    if (span) span.textContent = message;
+    toast.classList.toggle('error', isError);
+    if (icon) {
+      icon.className = isError ? 'ri-error-warning-line' : 'ri-checkbox-circle-line';
+    }
+    toast.classList.add('show');
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, CONFIG.TOAST_DURATION);
   }
-}; // ← ОЦЕ КРИТИЧНО! БЕЗ ЦЬОГО БУЛА ПОМИЛКА
-
-
+};
 
 /* --- ADMIN --- */
 const admin = {
-    load(id) {
-        const r = DB.recipes.find(x => x.id === id);
-        if(!r) return;
-        document.getElementById('admName').value = r.name;
-        document.getElementById('admCat').value = r.cat;
-        document.getElementById('admRes').value = Object.entries(r.resources).map(([k,v]) => `${k}:${v}`).join('\n');
-        document.getElementById('btnDelete').style.display = 'inline-block';
-    },
-    reset() {
-        document.getElementById('admName').value = '';
-        document.getElementById('admRes').value = '';
-        document.getElementById('btnDelete').style.display = 'none';
-    },
-    save() {
-        const name = document.getElementById('admName').value?.trim();
-        const cat = document.getElementById('admCat').value;
-        const resText = document.getElementById('admRes').value;
-        
-        if(!name) {
-            app.showToast('Вкажіть назву', true);
-            return;
-        }
-        
-        const { resources, errors } = utils.validateResourcesText(resText);
-        
-        if (errors.length > 0) {
-            app.showToast(errors[0], true);
-            return;
-        }
-
-        if(Object.keys(resources).length === 0) {
-            app.showToast('Додайте хоча б один ресурс', true);
-            return;
-        }
-
-        const isEditing = ACTIVE_ID && document.getElementById('btnDelete').style.display !== 'none';
-        let r = isEditing ? DB.recipes.find(x => x.id === ACTIVE_ID) : null;
-
-        if(r) {
-            r.name = name; 
-            r.cat = cat; 
-            r.resources = resources;
-            app.showToast('✓ Оновлено');
-        } else {
-            const newId = Date.now();
-            DB.recipes.push({ id: newId, name, cat, resources });
-            app.showToast('✓ Створено');
-        }
-        
-        app.saveDB();
-        app.toggleAdmin();
-    },
-    del() {
-        if(confirm(CONFIG.CONFIRM_DELETE)) {
-            const deletedId = ACTIVE_ID;
-            DB.recipes = DB.recipes.filter(x => x.id !== deletedId);
-            ACTIVE_ID = null;
-            app.saveDB();
-            app.toggleAdmin();
-            document.getElementById('detailContent').style.display = 'none';
-            document.getElementById('emptyState').classList.remove('hidden');
-            app.showToast('✓ Видалено');
-        }
+  load(id) {
+    const r = DB.recipes.find(x => x.id === id);
+    if(!r) return;
+    document.getElementById('admName').value = r.name;
+    document.getElementById('admCat').value = r.cat;
+    document.getElementById('admRes').value = Object.entries(r.resources).map(([k,v]) => `${k}:${v}`).join('\n');
+    document.getElementById('btnDelete').style.display = 'inline-block';
+  },
+  
+  reset() {
+    document.getElementById('admName').value = '';
+    document.getElementById('admCat').value = 'Інше';
+    document.getElementById('admRes').value = '';
+    document.getElementById('btnDelete').style.display = 'none';
+  },
+  
+  save() {
+    const name = document.getElementById('admName').value?.trim();
+    const cat = document.getElementById('admCat').value;
+    const resText = document.getElementById('admRes').value;
+    
+    if(!name) {
+      app.showToast('Вкажіть назву', true);
+      return;
     }
+    
+    const { resources, errors } = utils.validateResourcesText(resText);
+    
+    if (errors.length > 0) {
+      app.showToast(errors[0], true);
+      return;
+    }
+
+    if(Object.keys(resources).length === 0) {
+      app.showToast('Додайте хоча б один ресурс', true);
+      return;
+    }
+
+    const isEditing = ACTIVE_ID && document.getElementById('btnDelete').style.display !== 'none';
+    let r = isEditing ? DB.recipes.find(x => x.id === ACTIVE_ID) : null;
+
+    if(r) {
+      r.name = name; 
+      r.cat = cat; 
+      r.resources = resources;
+      app.showToast('✓ Оновлено');
+    } else {
+      const newId = Date.now();
+      DB.recipes.push({ id: newId, name, cat, resources });
+      app.showToast('✓ Створено');
+    }
+    
+    app.saveDB();
+    app.toggleAdmin();
+  },
+  
+  del() {
+    if(confirm(CONFIG.CONFIRM_DELETE)) {
+      const deletedId = ACTIVE_ID;
+      DB.recipes = DB.recipes.filter(x => x.id !== deletedId);
+      ACTIVE_ID = null;
+      app.saveDB();
+      app.toggleAdmin();
+      document.getElementById('detailContent').style.display = 'none';
+      document.getElementById('emptyState').classList.remove('hidden');
+      app.showToast('✓ Видалено');
+    }
+  }
 };
 
 /* --- INIT --- */
+// Завантажити збережену тему
+const savedTheme = localStorage.getItem(CONFIG.THEME_STORAGE_KEY);
+if (savedTheme === 'light') {
+  document.documentElement.classList.add('light-theme');
+  const btnTheme = document.getElementById('btnTheme');
+  if (btnTheme) {
+    const icon = btnTheme.querySelector('i');
+    if (icon) icon.className = 'ri-moon-line';
+  }
+}
+
 const debouncedRender = utils.debounce(() => app.renderList(), CONFIG.DEBOUNCE_DELAY);
 
 // Безпечне додавання слухачів з перевіркою
@@ -1684,6 +1890,9 @@ const addEventListenerSafe = (id, event, handler) => {
 
 addEventListenerSafe('btnAdmin', 'click', () => app.toggleAdmin());
 addEventListenerSafe('btnCloseAdmin', 'click', () => app.toggleAdmin());
+addEventListenerSafe('btnPrices', 'click', () => prices.show());
+addEventListenerSafe('btnClosePrices', 'click', () => prices.hide());
+addEventListenerSafe('btnResetPrices', 'click', () => prices.reset());
 addEventListenerSafe('btnTheme', 'click', () => app.toggleTheme());
 addEventListenerSafe('btnSaveAdmin', 'click', () => admin.save());
 addEventListenerSafe('btnResetAdmin', 'click', () => admin.reset());
@@ -1719,6 +1928,61 @@ if (authorLink) {
 addEventListenerSafe('search', 'input', () => debouncedRender());
 addEventListenerSafe('catFilter', 'change', () => app.renderList());
 addEventListenerSafe('sortFilter', 'change', () => app.renderList());
+
+// Слухачі для полів цін ресурсів (реальний час)
+document.addEventListener('input', (e) => {
+  if (e.target.classList.contains('price-input')) {
+    const key = e.target.dataset.key;
+    prices.updatePrice(key, e.target.value);
+  }
+});
+
+// Слухач для вибору зброї в меню управління цінами
+addEventListenerSafe('profitWeaponSelect', 'change', (e) => {
+  const selectedId = parseInt(e.target.value);
+  if (selectedId) {
+    prices.selectWeapon(selectedId);
+  } else {
+    prices.selectedWeaponId = null;
+    document.getElementById('costValue').textContent = '$0';
+    document.getElementById('sellPrice').value = '';
+    document.getElementById('profitValue').textContent = '$0';
+  }
+});
+
+// Слухач для ціни продажу (real-time оновлення при введенні)
+addEventListenerSafe('sellPrice', 'input', (e) => {
+  prices.updateSellPrice(e.target.value);
+});
+
+// Слухач для кнопки "Встановити ціну"
+addEventListenerSafe('btnSetPrice', 'click', () => {
+  const sellPriceEl = document.getElementById('sellPrice');
+  const sellPrice = parseFloat(sellPriceEl?.value) || 0;
+  
+  if (sellPrice > 0) {
+    prices.updateSellPrice(sellPrice);
+    // Показати повідомлення про успіх
+    const btn = document.getElementById('btnSetPrice');
+    const originalText = btn.textContent;
+    btn.textContent = '✓ Встановлено!';
+    btn.style.background = 'var(--success)';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+    }, 2000);
+  } else {
+    // Показати помилку
+    const btn = document.getElementById('btnSetPrice');
+    const originalText = btn.textContent;
+    btn.textContent = '⚠ Введіть ціну!';
+    btn.style.background = 'var(--danger)';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+    }, 2000);
+  }
+});
 
 // Функція для оновлення обох множників
 const updateBothQty = (qty) => {
@@ -1839,8 +2103,260 @@ const setupMobileNav = () => {
   switchToList();
 };
 
+/* --- PRICES CONTROLLER --- */
+const prices = {
+  // Зберігання цін продажу для кожної зброї
+  weaponSellPrices: {},
+
+  // Завантажити ціни з localStorage
+  loadPrices() {
+    const saved = localStorage.getItem('castello_prices');
+    if (saved) {
+      try {
+        const loaded = JSON.parse(saved);
+        Object.assign(COST_PRICES, loaded);
+      } catch (e) {
+        console.warn('Помилка завантаження цін');
+      }
+    }
+    
+    // Завантажити ціни продажу
+    const savedSellPrices = localStorage.getItem('castello_sell_prices');
+    if (savedSellPrices) {
+      try {
+        this.weaponSellPrices = JSON.parse(savedSellPrices);
+      } catch (e) {
+        console.warn('Помилка завантаження цін продажу');
+      }
+    }
+    
+    // Завантажити останнє вибране оружие
+    const lastSelectedId = localStorage.getItem('castello_last_weapon');
+    if (lastSelectedId) {
+      this.lastSelectedWeaponId = parseInt(lastSelectedId);
+    }
+  },
+
+  // Зберегти ціни в localStorage
+  savePrices() {
+    localStorage.setItem('castello_prices', JSON.stringify(COST_PRICES));
+  },
+
+  // Зберегти ціни продажу
+  saveSellPrices() {
+    localStorage.setItem('castello_sell_prices', JSON.stringify(this.weaponSellPrices));
+  },
+
+  // Зберегти останнє вибране оружие
+  saveLastWeapon() {
+    if (this.selectedWeaponId) {
+      localStorage.setItem('castello_last_weapon', this.selectedWeaponId.toString());
+    }
+  },
+
+  // Показати модаль з цінами
+  show() {
+    this.loadPrices();
+    this.renderWeaponSelect();
+    this.render();
+    // Відновити останнє вибране оружие
+    if (this.lastSelectedWeaponId) {
+      const select = document.getElementById('profitWeaponSelect');
+      if (select) {
+        select.value = this.lastSelectedWeaponId;
+        this.selectWeapon(this.lastSelectedWeaponId);
+      }
+    }
+    document.getElementById('pricesModal').classList.remove('hidden');
+  },
+
+  // Закрити модаль
+  hide() {
+    document.getElementById('pricesModal').classList.add('hidden');
+  },
+
+  // Відновити стандартні ціни
+  reset() {
+    const defaults = {
+      "Злиток золота": 200,
+      "Злиток Срібла": 200,
+      "Злиток латуні": 65,
+      "Злиток сталі": 35,
+      "Злиток заліза": 25,
+      "Злиток міді": 25,
+      "Злиток цинку": 25,
+      "Злиток свинцю": 25,
+      "Вугілля": 1.5,
+      "Форма з глини": 5,
+    };
+    Object.assign(COST_PRICES, defaults);
+    this.savePrices();
+    this.render();
+    if (ACTIVE_ID) app.select(ACTIVE_ID);
+    app.showToast('✓ Цени відновлено');
+  },
+
+  // Оновити цену ресурсу в реальному часі
+  updatePrice(key, value) {
+    const num = parseFloat(value) || 0;
+    COST_PRICES[key] = num;
+    this.savePrices();
+    
+    // Оновити собівартість якщо зброя вибрана в меню ціна
+    if (this.selectedWeaponId) {
+      this.updateCostDisplay();
+    }
+    
+    // Оновити також для головної панелі
+    if (ACTIVE_ID) {
+      const recipe = DB.recipes.find(x => x.id === ACTIVE_ID);
+      if (recipe) {
+        app.updateRecipeDisplay(recipe, parseInt(document.getElementById('recipeQty')?.value || 1));
+      }
+    }
+  },
+
+  // Оновити ціну продажу
+  updateSellPrice(value) {
+    const sellPrice = parseFloat(value) || 0;
+    
+    // Зберегти ціну для цієї зброї
+    if (this.selectedWeaponId) {
+      if (sellPrice > 0) {
+        this.weaponSellPrices[this.selectedWeaponId] = sellPrice;
+      } else {
+        delete this.weaponSellPrices[this.selectedWeaponId];
+      }
+      this.saveSellPrices();
+    }
+    
+    // Оновити прибуток в меню
+    this.updateProfitDisplay(sellPrice);
+    
+    // Оновити прибуток на головній панелі якщо ця зброя є активною
+    if (ACTIVE_ID === this.selectedWeaponId) {
+      this.updateMainPanelProfit();
+    }
+  },
+
+  // Оновити прибуток на головній панелі
+  updateMainPanelProfit() {
+    const dSellPrice = document.getElementById('dSellPrice');
+    const dProfit = document.getElementById('dProfit');
+    const sellPriceEl = document.getElementById('sellPrice');
+    
+    if (!dSellPrice || !dProfit || !ACTIVE_ID) {
+      if (dSellPrice) dSellPrice.textContent = '$0';
+      if (dProfit) dProfit.textContent = '$0';
+      if (dProfit) dProfit.style.color = 'var(--success)';
+      return;
+    }
+    
+    // Використовувати ціну для ACTIVE_ID з збережених цін
+    const unitSellPrice = this.weaponSellPrices[ACTIVE_ID] || 0;
+    const qty = parseInt(document.getElementById('recipeQty')?.value || 1) || 1;
+    const totalSellPrice = unitSellPrice * qty;
+    
+    const dCostText = document.getElementById('dCost')?.textContent.replace('$', '') || '0';
+    const totalCost = parseFloat(dCostText) || 0;
+    const profit = totalSellPrice - totalCost;
+    
+    dSellPrice.textContent = `$${totalSellPrice.toFixed(2)}`;
+    dProfit.textContent = `$${profit.toFixed(2)}`;
+    dProfit.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+  },
+
+  // Оновити відображення прибутку
+  updateProfitDisplay(sellPrice) {
+    const costEl = document.getElementById('costValue');
+    const profitEl = document.getElementById('profitValue');
+    
+    if (!costEl || !profitEl) return;
+    
+    const costText = costEl.textContent.replace('$', '');
+    const cost = parseFloat(costText) || 0;
+    const profit = sellPrice - cost;
+    
+    profitEl.textContent = `$${profit.toFixed(2)}`;
+    profitEl.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+  },
+
+  // Перемалювати форму з цінами
+  render() {
+    const inputs = document.querySelectorAll('.price-input');
+    inputs.forEach(input => {
+      const key = input.dataset.key;
+      input.value = COST_PRICES[key] || 0;
+    });
+    
+    // Оновити собівартість для вибраного предмета
+    if (this.selectedWeaponId) {
+      this.updateCostDisplay();
+    }
+  },
+
+  // Наповнити select з зброєю
+  renderWeaponSelect() {
+    const select = document.getElementById('profitWeaponSelect');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">-- Виберіть предмет --</option>' +
+      DB.recipes
+        .sort((a, b) => a.name.localeCompare(b.name, 'uk'))
+        .map(r => `<option value="${r.id}">${r.name}</option>`)
+        .join('');
+  },
+
+  // Обрати зброю для розрахунку прибутку
+  selectWeapon(recipeId) {
+    this.selectedWeaponId = recipeId;
+    this.saveLastWeapon();
+    
+    // Завантажити збережену ціну продажу для цієї зброї
+    const sellPriceEl = document.getElementById('sellPrice');
+    const savedPrice = this.weaponSellPrices[recipeId] || '';
+    if (sellPriceEl) {
+      sellPriceEl.value = savedPrice;
+      // Оновити прибуток відразу після встановлення ціни
+      this.updateProfitDisplay(parseFloat(savedPrice) || 0);
+    }
+    
+    this.updateCostDisplay();
+  },
+
+  // Оновити відображення собівартості для обраної зброї (переписана для незалежності від ACTIVE_ID)
+  updateCostDisplay() {
+    const costEl = document.getElementById('costValue');
+    const sellPriceEl = document.getElementById('sellPrice');
+    
+    if (!this.selectedWeaponId || !costEl) {
+      if (costEl) costEl.textContent = '$0';
+      return;
+    }
+    
+    const recipe = DB.recipes.find(x => x.id === this.selectedWeaponId);
+    if (!recipe) return;
+    
+    const cost = calc.calculateCost(recipe.resources);
+    costEl.textContent = `$${cost.toFixed(2)}`;
+    
+    // НЕ очищуємо sellPrice - зберігаємо введену ціну!
+    // Оновлюємо прибуток якщо ціна вже введена
+    if (sellPriceEl && sellPriceEl.value) {
+      const sellPrice = parseFloat(sellPriceEl.value) || 0;
+      this.updateProfitDisplay(sellPrice);
+    } else {
+      document.getElementById('profitValue').textContent = '$0';
+    }
+  }
+};
+
+// Завантажити збережені ціни при старті
+prices.loadPrices();
+
 app.init();
 setupMobileNav();
 </script>
 </body>
 </html>
+
