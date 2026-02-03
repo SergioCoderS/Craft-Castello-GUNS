@@ -596,10 +596,8 @@ input::placeholder, textarea::placeholder {
 }
 
 
-/* --- RESPONSIVE --- */
-
-/* Планшети та малі ноутбуки (1024px і менше) */
-@media (max-width: 1024px) {
+/* --- TABLET OPTIMIZATION (769px and below) --- */
+@media (max-width: 768px) {
   :root {
     --font-title: 'Libre Baskerville', serif;
   }
@@ -669,8 +667,8 @@ input::placeholder, textarea::placeholder {
   }
 }
 
-/* Мобільні пристрої (768px і менше) */
-@media (max-width: 768px) {
+/* --- MOBILE OPTIMIZATION (only phones) --- */
+@media (max-width: 640px) {
   body {
     height: 100vh;
     overflow: hidden;
@@ -958,10 +956,6 @@ input::placeholder, textarea::placeholder {
   font-size: 26px;
 }
 
-.mobile-nav-hidden {
-  display: none;
-}
-
 /* --- THEME TOGGLE --- */
 :root.light-theme {
   --bg-dark: #f8f8f8;
@@ -1106,9 +1100,198 @@ input::placeholder, textarea::placeholder {
 :root.light-theme .qty-group label {
   color: var(--text-muted);
 }
+
+/* --- AUTH MODAL STYLES --- */
+.auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+}
+
+.auth-modal {
+  background: var(--bg-panel);
+  border: 3px double var(--primary);
+  border-radius: 12px;
+  padding: 40px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 0 50px rgba(154, 46, 46, 0.8), 0 0 100px rgba(195, 154, 107, 0.3);
+  animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+
+.auth-modal h1 {
+  color: var(--primary);
+  font-size: 28px;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.auth-modal .subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 30px;
+  letter-spacing: 0.5px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#authPassword {
+  padding-right: 110px !important;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.password-controls {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  background: rgba(195, 154, 107, 0.15);
+  border: 1px solid rgba(195, 154, 107, 0.3);
+  border-radius: 4px;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.toggle-password {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(195, 154, 107, 0.15);
+  border: 1px solid rgba(195, 154, 107, 0.3);
+  border-radius: 4px;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.toggle-password:hover {
+  background: rgba(195, 154, 107, 0.25);
+  border-color: var(--primary);
+  color: var(--accent);
+}
+
+.toggle-password:active {
+  transform: scale(0.95);
+}
+
+.auth-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.auth-checkbox input {
+  width: auto;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+#authBtn {
+  background: var(--primary);
+  color: var(--bg-dark);
+  border-color: var(--accent);
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+
+#authBtn:hover {
+  background: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(195, 154, 107, 0.4);
+}
+
+#authBtn:active {
+  transform: translateY(0);
+}
+
+.auth-error {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: -10px;
+  display: none;
+}
+
+.auth-attempts {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 15px;
+}
 </style>
 </head>
 <body>
+
+<!-- AUTH MODAL -->
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-modal">
+    <h1>🔐Castello Guns</h1>
+    <div class="subtitle">Введіть кодове слово для доступу</div>
+    <form class="auth-form" id="authForm">
+      <div class="password-wrapper">
+        <input id="authPassword" type="password" placeholder="Кодове слово..." autocomplete="off" required>
+        <div class="password-controls">
+          <div class="language-indicator" id="langIndicator" title="Поточна мова">EN</div>
+          <button type="button" class="toggle-password" id="togglePassword" title="Показати/приховати пароль">
+            <i class="ri-eye-line"></i>
+          </button>
+        </div>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <label class="auth-checkbox" style="font-size: 14px;">
+        <input type="checkbox" id="rememberMe">
+        Запам'ятати на цьому комп'ютері
+      </label>
+      <button type="submit" id="authBtn" class="btn-primary">Вхід</button>
+      <div class="auth-attempts" id="authAttempts"></div>
+    </form>
+  </div>
+</div>
 
 <div class="app-container">
   <header>
@@ -1118,15 +1301,12 @@ input::placeholder, textarea::placeholder {
     <div class="header-actions">
       <button class="btn-ghost btn-icon" id="btnTheme" title="Перемкнути тему"><i class="ri-sun-line"></i></button>
       <button class="btn-ghost btn-icon" id="btnPrices" title="Управління цінами"><i class="ri-price-tag-3-line"></i></button>
+      <button class="btn-ghost btn-icon" id="btnSecurity" title="Безпека"><i class="ri-lock-line"></i></button>
       <button class="btn-primary" id="btnAdmin"><i class="ri-hammer-line"></i> Адміністрування</button>
     </div>
   </header>
 
   <aside class="panel panel-l">
-    <div class="mobile-nav" style="display: flex;">
-      <button class="mobile-nav-btn active" id="navList">📋 Список</button>
-      <button class="mobile-nav-btn" id="navDetails">📄 Деталі</button>
-    </div>
     <div class="controls">
       <div style="position: relative; display: flex; align-items: center;">
         <input id="search" placeholder="Пошук..." style="flex: 1;">
@@ -1148,7 +1328,11 @@ input::placeholder, textarea::placeholder {
         <input id="qtyMultiplier" type="number" min="1" max="100" value="1">
       </div>
     </div>
-    <div id="recipeList" class="scroll" style="flex: 1;"></div>
+    <div id="recipeList" style="flex: 1;"></div>
+    <div class="mobile-nav">
+      <button class="mobile-nav-btn active" id="navList"><i class="ri-list-check-2"></i> Список</button>
+      <button class="mobile-nav-btn" id="navDetails"><i class="ri-file-list-line"></i> Деталі</button>
+    </div>
   </aside>
 
   <main class="panel panel-m" id="detailPanel">
@@ -1303,6 +1487,47 @@ input::placeholder, textarea::placeholder {
   </div>
 </div>
 
+<!-- SECURITY MODAL -->
+<div id="securityModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="section-title" style="margin:0"><i class="ri-lock-line"></i> Безпека</h3>
+      <button class="btn-ghost btn-icon" id="btnCloseSecurity"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-content">
+      <h4 class="section-title"><i class="ri-key-2-line"></i> Управління паролем</h4>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Поточне кодове слово:</label>
+        <input type="text" id="currentPassword" placeholder="Зараз: ****" disabled style="background: rgba(0,0,0,0.2); cursor: not-allowed;">
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Нове кодове слово:</label>
+        <input type="password" id="newPassword" placeholder="Введіть нове слово (мін. 4 символи)">
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Повторіть слово:</label>
+        <input type="password" id="confirmPassword" placeholder="Повторіть введене слово">
+      </div>
+
+      <div id="securityError" style="color: var(--danger); font-size: 12px; margin-bottom: 10px; display: none;"></div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" id="btnChangePassword">Змінити пароль</button>
+        <button class="btn-ghost" id="btnResetPassword">Встановити стандартний</button>
+      </div>
+
+      <hr class="decorative-hr" style="margin-top: 25px;">
+
+      <h4 class="section-title"><i class="ri-logout-box-line"></i> Вихід</h4>
+      <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 15px;">Забути цей комп'ютер та вийти з системи</p>
+      <button class="btn-danger" id="btnLogout" style="width: 100%;"><i class="ri-logout-box-line"></i> Вийти</button>
+    </div>
+  </div>
+</div>
+
 <div id="adminModal" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">
@@ -1423,6 +1648,16 @@ let DEBOUNCE_TIMER = null;
 let HISTORY = []; // Для undo/redo
 let HISTORY_INDEX = -1;
 
+// --- AUTHENTICATION CONFIG ---
+const AUTH_CONFIG = {
+  DEFAULT_PASSWORD: 'castello123',
+  STORAGE_PASSWORD_KEY: 'castello_auth_pass',
+  STORAGE_SESSION_KEY: 'castello_auth_session',
+  STORAGE_ATTEMPTS_KEY: 'castello_auth_attempts',
+  MAX_ATTEMPTS: 5,
+  ATTEMPT_RESET_TIME: 900000 // 15 minutes
+};
+
 // --- UTILITY FUNCTIONS ---
 const utils = {
   debounce(fn, delay) {
@@ -1542,35 +1777,35 @@ const calc = {
     }
   },
 
-collectBaseResources(resources, result, mult = 1, depth = 0, visited = new Set()) {
-  if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
+  collectBaseResources(resources, result, mult = 1, depth = 0, visited = new Set()) {
+    if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
 
-  for (const [key, qty] of Object.entries(resources)) {
-    // Перевірка циклічних залежностей
-    if (visited.has(key)) continue;
-    
-    const total = qty * mult;
+    for (const [key, qty] of Object.entries(resources)) {
+      // Перевірка циклічних залежностей
+      if (visited.has(key)) continue;
+      
+      const total = qty * mult;
 
-    // 🧱 PART
-    if (DB.parts[key]) {
-      visited.add(key);
-      this.collectBaseResources(DB.parts[key], result, total, depth + 1, visited);
-      visited.delete(key);
-      continue;
+      // 🧱 PART
+      if (DB.parts[key]) {
+        visited.add(key);
+        this.collectBaseResources(DB.parts[key], result, total, depth + 1, visited);
+        visited.delete(key);
+        continue;
+      }
+
+      // 🔩 ЗЛИТОК → розкладаємо в сировину
+      if (DB.ingots[key]) {
+        visited.add(key);
+        this.collectBaseResources(DB.ingots[key], result, total, depth + 1, visited);
+        visited.delete(key);
+        continue;
+      }
+
+      // 🪵 БАЗОВА СИРОВИНА
+      result[key] = (result[key] || 0) + total;
     }
-
-    // 🔩 ЗЛИТОК → розкладаємо в сировину
-    if (DB.ingots[key]) {
-      visited.add(key);
-      this.collectBaseResources(DB.ingots[key], result, total, depth + 1, visited);
-      visited.delete(key);
-      continue;
-    }
-
-    // 🪵 БАЗОВА СИРОВИНА
-    result[key] = (result[key] || 0) + total;
-  }
-},
+  },
 
 
   calculateCost(resources) {
@@ -1590,6 +1825,159 @@ collectBaseResources(resources, result, mult = 1, depth = 0, visited = new Set()
 
 
 
+
+/* --- AUTHENTICATION CONTROLLER --- */
+const auth = {
+  isAuthenticated: false,
+  failedAttempts: 0,
+  attemptTimestamp: 0,
+
+  init() {
+    // Перевірити чи є активна сесія
+    const session = localStorage.getItem(AUTH_CONFIG.STORAGE_SESSION_KEY);
+    if (session) {
+      this.isAuthenticated = true;
+      this.hideAuthModal();
+      app.init();
+    } else {
+      this.setupAuthEvents();
+    }
+  },
+
+  setupAuthEvents() {
+    const authForm = document.getElementById('authForm');
+    const authPassword = document.getElementById('authPassword');
+    const togglePassword = document.getElementById('togglePassword');
+    const authBtn = document.getElementById('authBtn');
+
+    if (authForm) {
+      authForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.authenticate(authPassword.value);
+      });
+    }
+
+    if (togglePassword) {
+      togglePassword.addEventListener('click', (e) => {
+        e.preventDefault();
+        const icon = togglePassword.querySelector('i');
+        const isPassword = authPassword.type === 'password';
+        authPassword.type = isPassword ? 'text' : 'password';
+        icon.className = isPassword ? 'ri-eye-off-line' : 'ri-eye-line';
+      });
+    }
+
+    // Детекція мови при введені
+    if (authPassword) {
+      authPassword.addEventListener('input', () => {
+        this.detectLanguage(authPassword.value);
+      });
+      
+      authPassword.addEventListener('keydown', (e) => {
+        // Детекція при натисканні клавіші
+        setTimeout(() => {
+          this.detectLanguage(authPassword.value);
+        }, 10);
+      });
+      
+      authPassword.focus();
+    }
+  },
+
+  detectLanguage(text) {
+    if (!text || text.length === 0) {
+      document.getElementById('langIndicator').textContent = 'EN';
+      return;
+    }
+
+    const lastChar = text.charAt(text.length - 1);
+    const langIndicator = document.getElementById('langIndicator');
+    
+    // Перевіряємо остатний введений символ
+    const cyrillicRegex = /[а-яіїєґА-ЯІЇЄҐ]/;
+    const latinRegex = /[a-zA-Z]/;
+    const numberRegex = /[0-9]/;
+    
+    if (cyrillicRegex.test(lastChar)) {
+      langIndicator.textContent = 'УКР';
+      langIndicator.title = 'Українська мова';
+    } else if (latinRegex.test(lastChar)) {
+      langIndicator.textContent = 'ENG';
+      langIndicator.title = 'English language';
+    } else if (numberRegex.test(lastChar)) {
+      langIndicator.textContent = 'NUM';
+      langIndicator.title = 'Numbers and symbols';
+    } else {
+      langIndicator.textContent = '123';
+      langIndicator.title = 'Special characters';
+    }
+  },
+
+  authenticate(input) {
+    const storedPassword = localStorage.getItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY) || AUTH_CONFIG.DEFAULT_PASSWORD;
+    const rememberMe = document.getElementById('rememberMe')?.checked;
+    const authError = document.getElementById('authError');
+    const authAttempts = document.getElementById('authAttempts');
+    const authPassword = document.getElementById('authPassword');
+
+    // Перевірити кількість спроб
+    const now = Date.now();
+    if (this.attemptTimestamp && now - this.attemptTimestamp < AUTH_CONFIG.ATTEMPT_RESET_TIME) {
+      if (this.failedAttempts >= AUTH_CONFIG.MAX_ATTEMPTS) {
+        authError.textContent = '❌ Забагато спроб. Спробуйте пізніше.';
+        authError.style.display = 'block';
+        return;
+      }
+    } else {
+      this.failedAttempts = 0;
+    }
+
+    // Перевірити пароль
+    if (input === storedPassword) {
+      this.isAuthenticated = true;
+      this.failedAttempts = 0;
+
+      // Встановити сесію
+      if (rememberMe) {
+        const sessionToken = 'session_' + Date.now();
+        localStorage.setItem(AUTH_CONFIG.STORAGE_SESSION_KEY, sessionToken);
+      } else {
+        sessionStorage.setItem(AUTH_CONFIG.STORAGE_SESSION_KEY, 'temporary');
+      }
+
+      this.hideAuthModal();
+      app.init();
+      app.showToast('✓ Авторизація успішна');
+    } else {
+      this.failedAttempts++;
+      this.attemptTimestamp = now;
+      const remaining = AUTH_CONFIG.MAX_ATTEMPTS - this.failedAttempts;
+
+      authError.textContent = '❌ Невірне кодове слово';
+      authError.style.display = 'block';
+      authPassword.value = '';
+      authPassword.focus();
+
+      if (remaining > 0) {
+        authAttempts.textContent = `Залишилось спроб: ${remaining}`;
+      }
+    }
+  },
+
+  hideAuthModal() {
+    const authOverlay = document.getElementById('authOverlay');
+    if (authOverlay) {
+      authOverlay.style.display = 'none';
+    }
+  },
+
+  logout() {
+    localStorage.removeItem(AUTH_CONFIG.STORAGE_SESSION_KEY);
+    sessionStorage.removeItem(AUTH_CONFIG.STORAGE_SESSION_KEY);
+    this.isAuthenticated = false;
+    location.reload();
+  }
+};
 
 /* --- APP CONTROLLER --- */
 const app = {
@@ -1893,6 +2281,15 @@ addEventListenerSafe('btnCloseAdmin', 'click', () => app.toggleAdmin());
 addEventListenerSafe('btnPrices', 'click', () => prices.show());
 addEventListenerSafe('btnClosePrices', 'click', () => prices.hide());
 addEventListenerSafe('btnResetPrices', 'click', () => prices.reset());
+addEventListenerSafe('btnSecurity', 'click', () => security.show());
+addEventListenerSafe('btnCloseSecurity', 'click', () => security.hide());
+addEventListenerSafe('btnChangePassword', 'click', () => security.changePassword());
+addEventListenerSafe('btnResetPassword', 'click', () => security.resetPassword());
+addEventListenerSafe('btnLogout', 'click', () => {
+  if (confirm('Ви впевнені, що хочете вийти?')) {
+    auth.logout();
+  }
+});
 addEventListenerSafe('btnTheme', 'click', () => app.toggleTheme());
 addEventListenerSafe('btnSaveAdmin', 'click', () => admin.save());
 addEventListenerSafe('btnResetAdmin', 'click', () => admin.reset());
@@ -2351,12 +2748,75 @@ const prices = {
   }
 };
 
+/* --- SECURITY CONTROLLER --- */
+const security = {
+  show() {
+    const modal = document.getElementById('securityModal');
+    if (!modal) return;
+    
+    // Оновити поточний пароль (замаскований)
+    const storedPassword = localStorage.getItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY);
+    if (storedPassword) {
+      document.getElementById('currentPassword').value = '****' + storedPassword.slice(2);
+    }
+    
+    modal.classList.remove('hidden');
+  },
+
+  hide() {
+    const modal = document.getElementById('securityModal');
+    if (modal) modal.classList.add('hidden');
+    
+    // Очистити форму
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    document.getElementById('securityError').style.display = 'none';
+  },
+
+  changePassword() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const securityError = document.getElementById('securityError');
+
+    // Валідація
+    if (newPassword.length < 4) {
+      securityError.textContent = '⚠️ Пароль повинен мати мінімум 4 символи';
+      securityError.style.display = 'block';
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      securityError.textContent = '⚠️ Паролі не збігаються';
+      securityError.style.display = 'block';
+      return;
+    }
+
+    // Зберегти новий пароль
+    localStorage.setItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY, newPassword);
+    securityError.style.display = 'none';
+    
+    app.showToast('✓ Пароль змінено успішно');
+    
+    // Очистити форму через 1 сек та закрити
+    setTimeout(() => {
+      this.hide();
+    }, 1000);
+  },
+
+  resetPassword() {
+    if (confirm('Встановити стандартний пароль (castello123)?')) {
+      localStorage.removeItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY);
+      app.showToast('✓ Пароль скинуто на стандартний');
+      this.hide();
+    }
+  }
+};
+
 // Завантажити збережені ціни при старті
 prices.loadPrices();
 
-app.init();
+// Ініціалізація аутентифікації
+auth.init();
 setupMobileNav();
 </script>
 </body>
-</html>
-
