@@ -1637,11 +1637,35 @@ const COST_PRICES = {
 
 
 let DB;
-try {
-  DB = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY)) || RECIPES_DATA;
-} catch (e) {
-  console.error('Помилка при завантаженні БД:', e);
-  DB = RECIPES_DATA;
+let ENCRYPTION_PASSWORD = null;
+
+async function loadDatabase() {
+  try {
+    const encrypted = localStorage.getItem(CONFIG.STORAGE_KEY);
+    if (encrypted && ENCRYPTION_PASSWORD) {
+      const decrypted = await StorageEncryption.decrypt(encrypted, ENCRYPTION_PASSWORD);
+      DB = decrypted || RECIPES_DATA;
+    } else {
+      // Якщо немає зашифрованих даних, використовуємо за умовленням
+      DB = RECIPES_DATA;
+    }
+  } catch (e) {
+    console.error('Помилка при завантаженні БД:', e);
+    DB = RECIPES_DATA;
+  }
+}
+
+async function saveDatabase() {
+  try {
+    if (ENCRYPTION_PASSWORD) {
+      const encrypted = await StorageEncryption.encrypt(DB, ENCRYPTION_PASSWORD);
+      if (encrypted) {
+        localStorage.setItem(CONFIG.STORAGE_KEY, encrypted);
+      }
+    }
+  } catch (e) {
+    console.error('Помилка при збереженні БД:', e);
+  }
 }
 let ACTIVE_ID = null;
 let DEBOUNCE_TIMER = null;
@@ -1651,11 +1675,97 @@ let HISTORY_INDEX = -1;
 // --- AUTHENTICATION CONFIG ---
 const AUTH_CONFIG = {
   DEFAULT_PASSWORD: 'castellllo',
-  STORAGE_PASSWORD_KEY: 'castello_auth_pass',
+  STORAGE_PASSWORD_HASH_KEY: 'castello_auth_hash',
   STORAGE_SESSION_KEY: 'castello_auth_session',
   STORAGE_ATTEMPTS_KEY: 'castello_auth_attempts',
   MAX_ATTEMPTS: 5,
   ATTEMPT_RESET_TIME: 900000 // 15 minutes
+};
+
+// --- PASSWORD HASHING HELPER ---
+const PasswordHasher = {
+  async hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  },
+
+  async verifyPassword(password, hash) {
+    const computed = await this.hashPassword(password);
+    return computed === hash;
+  }
+};
+
+// --- ENCRYPTION HELPER FOR DATABASE ---
+const StorageEncryption = {
+  async deriveKey(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      data,
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+    return await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: new Uint8Array(16),
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  },
+
+  async encrypt(data, password) {
+    try {
+      const key = await this.deriveKey(password);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encoder = new TextEncoder();
+      const encrypted = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        encoder.encode(JSON.stringify(data))
+      );
+      const combined = new Uint8Array(iv.length + encrypted.byteLength);
+      combined.set(iv, 0);
+      combined.set(new Uint8Array(encrypted), iv.length);
+      return btoa(String.fromCharCode.apply(null, combined));
+    } catch (e) {
+      console.error('Помилка шифрування:', e);
+      return null;
+    }
+  },
+
+  async decrypt(encryptedData, password) {
+    try {
+      const key = await this.deriveKey(password);
+      const binary = atob(encryptedData);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const iv = bytes.slice(0, 12);
+      const encrypted = bytes.slice(12);
+      const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        encrypted
+      );
+      const decoder = new TextDecoder();
+      return JSON.parse(decoder.decode(decrypted));
+    } catch (e) {
+      console.error('Помилка розшифрування:', e);
+      return null;
+    }
+  }
 };
 
 // --- UTILITY FUNCTIONS ---
@@ -1681,7 +1791,8 @@ const utils = {
     if (HISTORY_INDEX > 0) {
       HISTORY_INDEX--;
       DB = JSON.parse(JSON.stringify(HISTORY[HISTORY_INDEX]));
-      localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(DB));
+      // saveDatabase() виконується без await (асинхронно на фоні)
+      saveDatabase();
       app.renderList();
       if (ACTIVE_ID) app.select(ACTIVE_ID);
       app.showToast('↶ Скасовано');
@@ -1692,7 +1803,8 @@ const utils = {
     if (HISTORY_INDEX < HISTORY.length - 1) {
       HISTORY_INDEX++;
       DB = JSON.parse(JSON.stringify(HISTORY[HISTORY_INDEX]));
-      localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(DB));
+      // saveDatabase() виконується без await (асинхронно на фоні)
+      saveDatabase();
       app.renderList();
       if (ACTIVE_ID) app.select(ACTIVE_ID);
       app.showToast('↷ Повторено');
@@ -1705,7 +1817,13 @@ const utils = {
     const errors = [];
 
     lines.forEach((line, i) => {
-      const [k, v] = line.split(':').map(s => s.trim());
+      const parts = line.split(':');
+      if (parts.length < 2) {
+        errors.push(`Рядок ${i + 1}: потрібен формат "Назва: кількість"`);
+        return;
+      }
+      const k = parts[0].trim();
+      const v = parts.slice(1).join(':').trim(); // Дозволяємо `:` в значеннях
       const qty = parseFloat(v);
       if (!k || isNaN(qty) || qty <= 0) {
         errors.push(`Рядок ${i + 1}: помилка`);
@@ -1755,6 +1873,7 @@ const calc = {
 
   collectIngots(resources, result, mult = 1, depth = 0, visited = new Set()) {
     if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
+    if (!resources || typeof resources !== 'object') return;
 
     for (const [key, qty] of Object.entries(resources)) {
       // Перевірка циклічних залежностей
@@ -1763,7 +1882,7 @@ const calc = {
       const total = qty * mult;
 
       // 🧱 PART — розкладаємо далі
-      if (DB.parts[key]) {
+      if (DB.parts && DB.parts[key]) {
         visited.add(key);
         this.collectIngots(DB.parts[key], result, total, depth + 1, visited);
         visited.delete(key);
@@ -1771,7 +1890,7 @@ const calc = {
       }
 
       // 🔒 ЗЛИТОК — додаємо
-      if (DB.ingots[key] && COST_PRICES[key] > 0) {
+      if (DB.ingots && DB.ingots[key] && COST_PRICES[key] > 0) {
         this.add(result, key, total);
       }
     }
@@ -1779,6 +1898,7 @@ const calc = {
 
   collectBaseResources(resources, result, mult = 1, depth = 0, visited = new Set()) {
     if (depth > CONFIG.MAX_RECURSION_DEPTH) return;
+    if (!resources || typeof resources !== 'object') return;
 
     for (const [key, qty] of Object.entries(resources)) {
       // Перевірка циклічних залежностей
@@ -1787,7 +1907,7 @@ const calc = {
       const total = qty * mult;
 
       // 🧱 PART
-      if (DB.parts[key]) {
+      if (DB.parts && DB.parts[key]) {
         visited.add(key);
         this.collectBaseResources(DB.parts[key], result, total, depth + 1, visited);
         visited.delete(key);
@@ -1795,7 +1915,7 @@ const calc = {
       }
 
       // 🔩 ЗЛИТОК → розкладаємо в сировину
-      if (DB.ingots[key]) {
+      if (DB.ingots && DB.ingots[key]) {
         visited.add(key);
         this.collectBaseResources(DB.ingots[key], result, total, depth + 1, visited);
         visited.delete(key);
@@ -1831,12 +1951,25 @@ const auth = {
   isAuthenticated: false,
   failedAttempts: 0,
   attemptTimestamp: 0,
+  defaultPasswordHash: null,
 
-  init() {
+  async init() {
+    // Ініціалізувати хеш по умовчанню
+    this.defaultPasswordHash = await PasswordHasher.hashPassword(AUTH_CONFIG.DEFAULT_PASSWORD);
+    
     // Перевірити чи є активна сесія
     const session = localStorage.getItem(AUTH_CONFIG.STORAGE_SESSION_KEY);
     if (session) {
       this.isAuthenticated = true;
+      // Перевірити чи є збережений пароль в сесії
+      const sessionPassword = sessionStorage.getItem('_session_pwd') || localStorage.getItem('_session_pwd');
+      if (sessionPassword) {
+        ENCRYPTION_PASSWORD = sessionPassword;
+      } else {
+        // Якщо пароль не знайдено, використовуємо стандартний
+        ENCRYPTION_PASSWORD = AUTH_CONFIG.DEFAULT_PASSWORD;
+      }
+      await loadDatabase();
       this.hideAuthModal();
       app.init();
     } else {
@@ -1913,8 +2046,9 @@ const auth = {
     }
   },
 
-  authenticate(input) {
-    const storedPassword = localStorage.getItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY) || AUTH_CONFIG.DEFAULT_PASSWORD;
+  async authenticate(input) {
+    const storedHash = localStorage.getItem(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
+    const correctHash = storedHash || this.defaultPasswordHash;
     const rememberMe = document.getElementById('rememberMe')?.checked;
     const authError = document.getElementById('authError');
     const authAttempts = document.getElementById('authAttempts');
@@ -1933,16 +2067,25 @@ const auth = {
     }
 
     // Перевірити пароль
-    if (input === storedPassword) {
+    const isCorrect = await PasswordHasher.verifyPassword(input, correctHash);
+    if (isCorrect) {
       this.isAuthenticated = true;
       this.failedAttempts = 0;
+      
+      // Встановити пароль для шифрування БД
+      ENCRYPTION_PASSWORD = input;
+      await loadDatabase();
 
       // Встановити сесію
       if (rememberMe) {
         const sessionToken = 'session_' + Date.now();
         localStorage.setItem(AUTH_CONFIG.STORAGE_SESSION_KEY, sessionToken);
+        // Зберегти пароль у localStorage для відновлення сесії
+        localStorage.setItem('_session_pwd', input);
       } else {
         sessionStorage.setItem(AUTH_CONFIG.STORAGE_SESSION_KEY, 'temporary');
+        // Зберегти пароль у sessionStorage для відновлення сесії
+        sessionStorage.setItem('_session_pwd', input);
       }
 
       this.hideAuthModal();
@@ -1973,7 +2116,9 @@ const auth = {
 
   logout() {
     localStorage.removeItem(AUTH_CONFIG.STORAGE_SESSION_KEY);
+    localStorage.removeItem('_session_pwd');
     sessionStorage.removeItem(AUTH_CONFIG.STORAGE_SESSION_KEY);
+    sessionStorage.removeItem('_session_pwd');
     this.isAuthenticated = false;
     location.reload();
   }
@@ -1982,6 +2127,11 @@ const auth = {
 /* --- APP CONTROLLER --- */
 const app = {
   init() {
+    // Перевірити що DB визначена і має необхідні властивості
+    if (!DB || !DB.recipes || !Array.isArray(DB.recipes)) {
+      console.error('БД не завантажена правильно');
+      DB = RECIPES_DATA;
+    }
     app.renderCats();
     app.renderList();
     utils.saveToHistory();
@@ -2157,7 +2307,7 @@ if (dBase) {
   },
 
   saveDB() {
-    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(DB));
+    saveDatabase();
     app.renderList();
     app.renderCats();
   },
@@ -2327,10 +2477,10 @@ addEventListenerSafe('catFilter', 'change', () => app.renderList());
 addEventListenerSafe('sortFilter', 'change', () => app.renderList());
 
 // Слухачі для полів цін ресурсів (реальний час)
-document.addEventListener('input', (e) => {
+document.addEventListener('input', async (e) => {
   if (e.target.classList.contains('price-input')) {
     const key = e.target.dataset.key;
-    prices.updatePrice(key, e.target.value);
+    await prices.updatePrice(key, e.target.value);
   }
 });
 
@@ -2348,17 +2498,17 @@ addEventListenerSafe('profitWeaponSelect', 'change', (e) => {
 });
 
 // Слухач для ціни продажу (real-time оновлення при введенні)
-addEventListenerSafe('sellPrice', 'input', (e) => {
-  prices.updateSellPrice(e.target.value);
+addEventListenerSafe('sellPrice', 'input', async (e) => {
+  await prices.updateSellPrice(e.target.value);
 });
 
 // Слухач для кнопки "Встановити ціну"
-addEventListenerSafe('btnSetPrice', 'click', () => {
+addEventListenerSafe('btnSetPrice', 'click', async () => {
   const sellPriceEl = document.getElementById('sellPrice');
   const sellPrice = parseFloat(sellPriceEl?.value) || 0;
   
   if (sellPrice > 0) {
-    prices.updateSellPrice(sellPrice);
+    await prices.updateSellPrice(sellPrice);
     // Показати повідомлення про успіх
     const btn = document.getElementById('btnSetPrice');
     const originalText = btn.textContent;
@@ -2506,12 +2656,12 @@ const prices = {
   weaponSellPrices: {},
 
   // Завантажити ціни з localStorage
-  loadPrices() {
+  async loadPrices() {
     const saved = localStorage.getItem('castello_prices');
-    if (saved) {
+    if (saved && ENCRYPTION_PASSWORD) {
       try {
-        const loaded = JSON.parse(saved);
-        Object.assign(COST_PRICES, loaded);
+        const loaded = await StorageEncryption.decrypt(saved, ENCRYPTION_PASSWORD + '_prices');
+        if (loaded) Object.assign(COST_PRICES, loaded);
       } catch (e) {
         console.warn('Помилка завантаження цін');
       }
@@ -2519,9 +2669,10 @@ const prices = {
     
     // Завантажити ціни продажу
     const savedSellPrices = localStorage.getItem('castello_sell_prices');
-    if (savedSellPrices) {
+    if (savedSellPrices && ENCRYPTION_PASSWORD) {
       try {
-        this.weaponSellPrices = JSON.parse(savedSellPrices);
+        const loaded = await StorageEncryption.decrypt(savedSellPrices, ENCRYPTION_PASSWORD + '_sell');
+        if (loaded) this.weaponSellPrices = loaded;
       } catch (e) {
         console.warn('Помилка завантаження цін продажу');
       }
@@ -2534,14 +2685,24 @@ const prices = {
     }
   },
 
-  // Зберегти ціни в localStorage
-  savePrices() {
-    localStorage.setItem('castello_prices', JSON.stringify(COST_PRICES));
+  // Зберегти ціни в localStorage (зашифровані)
+  async savePrices() {
+    if (ENCRYPTION_PASSWORD) {
+      const encrypted = await StorageEncryption.encrypt(COST_PRICES, ENCRYPTION_PASSWORD + '_prices');
+      if (encrypted) {
+        localStorage.setItem('castello_prices', encrypted);
+      }
+    }
   },
 
-  // Зберегти ціни продажу
-  saveSellPrices() {
-    localStorage.setItem('castello_sell_prices', JSON.stringify(this.weaponSellPrices));
+  // Зберегти ціни продажу (зашифровані)
+  async saveSellPrices() {
+    if (ENCRYPTION_PASSWORD) {
+      const encrypted = await StorageEncryption.encrypt(this.weaponSellPrices, ENCRYPTION_PASSWORD + '_sell');
+      if (encrypted) {
+        localStorage.setItem('castello_sell_prices', encrypted);
+      }
+    }
   },
 
   // Зберегти останнє вибране оружие
@@ -2552,8 +2713,8 @@ const prices = {
   },
 
   // Показати модаль з цінами
-  show() {
-    this.loadPrices();
+  async show() {
+    await this.loadPrices();
     this.renderWeaponSelect();
     this.render();
     // Відновити останнє вибране оружие
@@ -2573,7 +2734,7 @@ const prices = {
   },
 
   // Відновити стандартні ціни
-  reset() {
+  async reset() {
     const defaults = {
       "Злиток золота": 200,
       "Злиток Срібла": 200,
@@ -2587,17 +2748,17 @@ const prices = {
       "Форма з глини": 5,
     };
     Object.assign(COST_PRICES, defaults);
-    this.savePrices();
+    await this.savePrices();
     this.render();
     if (ACTIVE_ID) app.select(ACTIVE_ID);
     app.showToast('✓ Цени відновлено');
   },
 
   // Оновити цену ресурсу в реальному часі
-  updatePrice(key, value) {
+  async updatePrice(key, value) {
     const num = parseFloat(value) || 0;
     COST_PRICES[key] = num;
-    this.savePrices();
+    await this.savePrices();
     
     // Оновити собівартість якщо зброя вибрана в меню ціна
     if (this.selectedWeaponId) {
@@ -2614,7 +2775,7 @@ const prices = {
   },
 
   // Оновити ціну продажу
-  updateSellPrice(value) {
+  async updateSellPrice(value) {
     const sellPrice = parseFloat(value) || 0;
     
     // Зберегти ціну для цієї зброї
@@ -2624,7 +2785,7 @@ const prices = {
       } else {
         delete this.weaponSellPrices[this.selectedWeaponId];
       }
-      this.saveSellPrices();
+      await this.saveSellPrices();
     }
     
     // Оновити прибуток в меню
@@ -2754,10 +2915,10 @@ const security = {
     const modal = document.getElementById('securityModal');
     if (!modal) return;
     
-    // Оновити поточний пароль (замаскований)
-    const storedPassword = localStorage.getItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY);
-    if (storedPassword) {
-      document.getElementById('currentPassword').value = '****' + storedPassword.slice(2);
+    // Оновити поточний пароль (повністю замаскований для безпеки)
+    const storedHash = localStorage.getItem(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
+    if (storedHash) {
+      document.getElementById('currentPassword').value = '••••••••';
     }
     
     modal.classList.remove('hidden');
@@ -2773,7 +2934,7 @@ const security = {
     document.getElementById('securityError').style.display = 'none';
   },
 
-  changePassword() {
+  async changePassword() {
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     const securityError = document.getElementById('securityError');
@@ -2791,8 +2952,9 @@ const security = {
       return;
     }
 
-    // Зберегти новий пароль
-    localStorage.setItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY, newPassword);
+    // Зберегти хеш нового пароля
+    const hash = await PasswordHasher.hashPassword(newPassword);
+    localStorage.setItem(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY, hash);
     securityError.style.display = 'none';
     
     app.showToast('✓ Пароль змінено успішно');
@@ -2805,19 +2967,18 @@ const security = {
 
   resetPassword() {
     if (confirm('Встановити стандартний пароль (castello123)?')) {
-      localStorage.removeItem(AUTH_CONFIG.STORAGE_PASSWORD_KEY);
+      localStorage.removeItem(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
       app.showToast('✓ Пароль скинуто на стандартний');
       this.hide();
     }
   }
 };
 
-// Завантажити збережені ціни при старті
-prices.loadPrices();
+// Завантажити збережені ціни при старті (буде зроблено після авторизації)
+// prices.loadPrices();
 
 // Ініціалізація аутентифікації
 auth.init();
 setupMobileNav();
 </script>
 </body>
-
