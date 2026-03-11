@@ -1101,197 +1101,9 @@ input::placeholder, textarea::placeholder {
   color: var(--text-muted);
 }
 
-/* --- AUTH MODAL STYLES --- */
-.auth-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.95);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  backdrop-filter: blur(5px);
-}
-
-.auth-modal {
-  background: var(--bg-panel);
-  border: 3px double var(--primary);
-  border-radius: 12px;
-  padding: 40px;
-  width: 90%;
-  max-width: 420px;
-  box-shadow: 0 0 50px rgba(154, 46, 46, 0.8), 0 0 100px rgba(195, 154, 107, 0.3);
-  animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: center;
-}
-
-.auth-modal h1 {
-  color: var(--primary);
-  font-size: 28px;
-  margin: 0 0 12px 0;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-
-.auth-modal .subtitle {
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-bottom: 30px;
-  letter-spacing: 0.5px;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-#authPassword {
-  padding-right: 110px !important;
-  font-size: 16px;
-  letter-spacing: 2px;
-}
-
-.password-controls {
-  position: absolute;
-  right: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.language-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 32px;
-  background: rgba(195, 154, 107, 0.15);
-  border: 1px solid rgba(195, 154, 107, 0.3);
-  border-radius: 4px;
-  color: var(--primary);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.2s;
-}
-
-.toggle-password {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(195, 154, 107, 0.15);
-  border: 1px solid rgba(195, 154, 107, 0.3);
-  border-radius: 4px;
-  color: var(--primary);
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  font-size: 16px;
-  transition: all 0.2s;
-}
-
-.toggle-password:hover {
-  background: rgba(195, 154, 107, 0.25);
-  border-color: var(--primary);
-  color: var(--accent);
-}
-
-.toggle-password:active {
-  transform: scale(0.95);
-}
-
-.auth-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-muted);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.auth-checkbox input {
-  width: auto;
-  cursor: pointer;
-  accent-color: var(--primary);
-}
-
-#authBtn {
-  background: var(--primary);
-  color: var(--bg-dark);
-  border-color: var(--accent);
-  padding: 12px;
-  font-size: 16px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all 0.3s;
-  margin-top: 10px;
-}
-
-#authBtn:hover {
-  background: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(195, 154, 107, 0.4);
-}
-
-#authBtn:active {
-  transform: translateY(0);
-}
-
-.auth-error {
-  color: var(--danger);
-  font-size: 12px;
-  margin-top: -10px;
-  display: none;
-}
-
-.auth-attempts {
-  color: var(--text-muted);
-  font-size: 11px;
-  margin-top: 15px;
-}
 </style>
 </head>
 <body>
-
-<!-- AUTH MODAL -->
-<div id="authOverlay" class="auth-overlay">
-  <div class="auth-modal">
-    <h1>🔐Castello Guns</h1>
-    <div class="subtitle">Введіть кодове слово для доступу</div>
-    <form class="auth-form" id="authForm">
-      <div class="password-wrapper">
-        <input id="authPassword" type="password" placeholder="Кодове слово..." autocomplete="off" required>
-        <div class="password-controls">
-          <div class="language-indicator" id="langIndicator" title="Поточна мова">EN</div>
-          <button type="button" class="toggle-password" id="togglePassword" title="Показати/приховати пароль">
-            <i class="ri-eye-line"></i>
-          </button>
-        </div>
-      </div>
-      <div class="auth-error" id="authError"></div>
-      <label class="auth-checkbox" style="font-size: 14px;">
-        <input type="checkbox" id="rememberMe">
-        Запам'ятати на цьому комп'ютері
-      </label>
-      <button type="submit" id="authBtn" class="btn-primary">Вхід</button>
-      <div class="auth-attempts" id="authAttempts"></div>
-    </form>
-  </div>
-</div>
 
 <div class="app-container">
   <header>
@@ -1301,7 +1113,6 @@ input::placeholder, textarea::placeholder {
     <div class="header-actions">
       <button class="btn-ghost btn-icon" id="btnTheme" title="Перемкнути тему"><i class="ri-sun-line"></i></button>
       <button class="btn-ghost btn-icon" id="btnPrices" title="Управління цінами"><i class="ri-price-tag-3-line"></i></button>
-      <button class="btn-ghost btn-icon" id="btnSecurity" title="Безпека"><i class="ri-lock-line"></i></button>
       <button class="btn-ghost btn-icon" id="btnAbout" title="Про програму"><i class="ri-information-line"></i></button>
       <button class="btn-primary" id="btnAdmin"><i class="ri-hammer-line"></i> Адміністрування</button>
     </div>
@@ -1488,47 +1299,6 @@ input::placeholder, textarea::placeholder {
   </div>
 </div>
 
-<!-- SECURITY MODAL -->
-<div id="securityModal" class="modal-overlay hidden">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 class="section-title" style="margin:0"><i class="ri-lock-line"></i> Безпека</h3>
-      <button class="btn-ghost btn-icon" id="btnCloseSecurity"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-content">
-      <h4 class="section-title"><i class="ri-key-2-line"></i> Управління паролем</h4>
-      
-      <div style="margin-bottom: 15px;">
-        <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Поточне кодове слово:</label>
-        <input type="text" id="currentPassword" placeholder="Зараз: ****" disabled style="background: rgba(0,0,0,0.2); cursor: not-allowed;">
-      </div>
-
-      <div style="margin-bottom: 15px;">
-        <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Нове кодове слово:</label>
-        <input type="password" id="newPassword" placeholder="Введіть нове слово (мін. 4 символи)">
-      </div>
-
-      <div style="margin-bottom: 15px;">
-        <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Повторіть слово:</label>
-        <input type="password" id="confirmPassword" placeholder="Повторіть введене слово">
-      </div>
-
-      <div id="securityError" style="color: var(--danger); font-size: 12px; margin-bottom: 10px; display: none;"></div>
-
-      <div class="modal-actions">
-        <button class="btn-primary" id="btnChangePassword">Змінити пароль</button>
-        <button class="btn-ghost" id="btnResetPassword">Встановити стандартний</button>
-      </div>
-
-      <hr class="decorative-hr" style="margin-top: 25px;">
-
-      <h4 class="section-title"><i class="ri-logout-box-line"></i> Вихід</h4>
-      <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 15px;">Забути цей комп'ютер та вийти з системи</p>
-      <button class="btn-danger" id="btnLogout" style="width: 100%;"><i class="ri-logout-box-line"></i> Вийти</button>
-    </div>
-  </div>
-</div>
-
 <!-- ABOUT MODAL -->
 <div id="aboutModal" class="modal-overlay hidden">
   <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
@@ -1651,42 +1421,34 @@ const COST_PRICES = {
 
 
 let DB;
-let ENCRYPTION_PASSWORD = null;
-
 async function loadDatabase() {
   try {
-    const encrypted = storage.getLocal(CONFIG.STORAGE_KEY) || storage.getSession(CONFIG.STORAGE_KEY);
-    if (encrypted && ENCRYPTION_PASSWORD) {
-      const decrypted = await StorageEncryption.decrypt(encrypted, ENCRYPTION_PASSWORD);
-      if (decrypted) {
-        DB = decrypted;
-      } else {
-        showStorageWarning('⚠️ Не вдалося розшифрувати базу. Перевірте пароль або спробуйте знову.');
+    const raw = storage.getLocal(CONFIG.STORAGE_KEY) || storage.getSession(CONFIG.STORAGE_KEY);
+    if (raw) {
+      try {
+        DB = JSON.parse(raw) || RECIPES_DATA;
+      } catch (e) {
+        showStorageWarning('⚠️ Не вдалося прочитати локальну базу. Можливо вона зі старої зашифрованої версії.');
         DB = RECIPES_DATA;
       }
     } else {
-      // Якщо немає зашифрованих даних, використовуємо за умовленням
       DB = RECIPES_DATA;
     }
   } catch (e) {
     console.error('Помилка при завантаженні БД:', e);
-    showStorageWarning('⚠️ Помилка розшифрування бази. Перевірте пароль або спробуйте знову.');
+    showStorageWarning('⚠️ Помилка завантаження бази. Спробуйте перезапустити сторінку.');
     DB = RECIPES_DATA;
   }
 }
 
 async function saveDatabase() {
   try {
-    if (ENCRYPTION_PASSWORD) {
-      const encrypted = await StorageEncryption.encrypt(DB, ENCRYPTION_PASSWORD);
-      if (encrypted) {
-        if (!storage.setLocal(CONFIG.STORAGE_KEY, encrypted)) {
-          showStorageWarning('⚠️ Браузер блокує збереження бази. Дані збережено лише на цей сеанс.');
-          storage.setSession(CONFIG.STORAGE_KEY, encrypted);
-        } else {
-          storage.removeSession(CONFIG.STORAGE_KEY);
-        }
-      }
+    const raw = JSON.stringify(DB);
+    if (!storage.setLocal(CONFIG.STORAGE_KEY, raw)) {
+      showStorageWarning('⚠️ Браузер блокує збереження бази. Дані збережено лише на цей сеанс.');
+      storage.setSession(CONFIG.STORAGE_KEY, raw);
+    } else {
+      storage.removeSession(CONFIG.STORAGE_KEY);
     }
   } catch (e) {
     console.error('Помилка при збереженні БД:', e);
@@ -1696,16 +1458,6 @@ let ACTIVE_ID = null;
 let DEBOUNCE_TIMER = null;
 let HISTORY = []; // Для undo/redo
 let HISTORY_INDEX = -1;
-
-// --- AUTHENTICATION CONFIG ---
-const AUTH_CONFIG = {
-  DEFAULT_PASSWORD: 'castellllo',
-  STORAGE_PASSWORD_HASH_KEY: 'castello_auth_hash',
-  STORAGE_SESSION_KEY: 'castello_auth_session',
-  STORAGE_ATTEMPTS_KEY: 'castello_auth_attempts',
-  MAX_ATTEMPTS: 5,
-  ATTEMPT_RESET_TIME: 900000 // 15 minutes
-};
 
 // --- VERSION INFO ---
 const VERSION_INFO = {
@@ -1747,92 +1499,6 @@ const VERSION_INFO = {
       ]
     }
   ]
-};
-
-// --- PASSWORD HASHING HELPER ---
-const PasswordHasher = {
-  async hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  },
-
-  async verifyPassword(password, hash) {
-    const computed = await this.hashPassword(password);
-    return computed === hash;
-  }
-};
-
-// --- ENCRYPTION HELPER FOR DATABASE ---
-const StorageEncryption = {
-  async deriveKey(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw',
-      data,
-      { name: 'PBKDF2' },
-      false,
-      ['deriveKey']
-    );
-    return await crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: new Uint8Array(16),
-        iterations: 100000,
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
-  },
-
-  async encrypt(data, password) {
-    try {
-      const key = await this.deriveKey(password);
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const encoder = new TextEncoder();
-      const encrypted = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
-        key,
-        encoder.encode(JSON.stringify(data))
-      );
-      const combined = new Uint8Array(iv.length + encrypted.byteLength);
-      combined.set(iv, 0);
-      combined.set(new Uint8Array(encrypted), iv.length);
-      return btoa(String.fromCharCode.apply(null, combined));
-    } catch (e) {
-      console.error('Помилка шифрування:', e);
-      return null;
-    }
-  },
-
-  async decrypt(encryptedData, password) {
-    try {
-      const key = await this.deriveKey(password);
-      const binary = atob(encryptedData);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      const iv = bytes.slice(0, 12);
-      const encrypted = bytes.slice(12);
-      const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv },
-        key,
-        encrypted
-      );
-      const decoder = new TextDecoder();
-      return JSON.parse(decoder.decode(decrypted));
-    } catch (e) {
-      console.error('Помилка розшифрування:', e);
-      return null;
-    }
-  }
 };
 
 // --- UTILITY FUNCTIONS ---
@@ -1988,11 +1654,6 @@ const storage = {
 
 const showStorageWarning = (message) => {
   app?.showToast?.(message, true);
-  const authError = document.getElementById('authError');
-  if (authError) {
-    authError.textContent = message;
-    authError.style.display = 'block';
-  }
 };
 
 
@@ -2078,214 +1739,9 @@ const calc = {
 
 /* --- AUTHENTICATION CONTROLLER --- */
 const auth = {
-  isAuthenticated: false,
-  failedAttempts: 0,
-  attemptTimestamp: 0,
-  defaultPasswordHash: null,
-
   async init() {
-    // Ініціалізувати хеш по умовчанню
-    this.defaultPasswordHash = await PasswordHasher.hashPassword(AUTH_CONFIG.DEFAULT_PASSWORD);
-    
-    // Перевірити чи є активна сесія
-    const localSession = storage.getLocal(AUTH_CONFIG.STORAGE_SESSION_KEY);
-    const session = localSession || storage.getSession(AUTH_CONFIG.STORAGE_SESSION_KEY);
-    if (session) {
-      // Перевірити чи є збережений пароль в сесії
-      const sessionPassword = localSession
-        ? storage.getLocal('_session_pwd')
-        : storage.getSession('_session_pwd');
-
-      if (sessionPassword) {
-        this.isAuthenticated = true;
-        ENCRYPTION_PASSWORD = sessionPassword;
-        await loadDatabase();
-        this.hideAuthModal();
-        app.init();
-      } else {
-        // Сесія є, але пароля немає — очищуємо і просимо вхід
-        storage.removeLocal(AUTH_CONFIG.STORAGE_SESSION_KEY);
-        storage.removeLocal('_session_pwd');
-        storage.removeSession(AUTH_CONFIG.STORAGE_SESSION_KEY);
-        storage.removeSession('_session_pwd');
-        this.isAuthenticated = false;
-        this.setupAuthEvents();
-      }
-    } else {
-      this.setupAuthEvents();
-    }
-  },
-
-  setupAuthEvents() {
-    const authForm = document.getElementById('authForm');
-    const authPassword = document.getElementById('authPassword');
-    const togglePassword = document.getElementById('togglePassword');
-    const authBtn = document.getElementById('authBtn');
-
-    if (authForm) {
-      authForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.authenticate(authPassword.value);
-      });
-    }
-
-    if (togglePassword) {
-      togglePassword.addEventListener('click', (e) => {
-        e.preventDefault();
-        const icon = togglePassword.querySelector('i');
-        const isPassword = authPassword.type === 'password';
-        authPassword.type = isPassword ? 'text' : 'password';
-        icon.className = isPassword ? 'ri-eye-off-line' : 'ri-eye-line';
-      });
-    }
-
-    // Детекція мови при введені
-    if (authPassword) {
-      authPassword.addEventListener('input', () => {
-        this.detectLanguage(authPassword.value);
-      });
-      
-      authPassword.addEventListener('keydown', (e) => {
-        // Детекція при натисканні клавіші
-        setTimeout(() => {
-          this.detectLanguage(authPassword.value);
-        }, 10);
-      });
-      
-      authPassword.focus();
-    }
-  },
-
-  detectLanguage(text) {
-    if (!text || text.length === 0) {
-      document.getElementById('langIndicator').textContent = 'EN';
-      return;
-    }
-
-    const lastChar = text.charAt(text.length - 1);
-    const langIndicator = document.getElementById('langIndicator');
-    
-    // Перевіряємо остатний введений символ
-    const cyrillicRegex = /[а-яіїєґА-ЯІЇЄҐ]/;
-    const latinRegex = /[a-zA-Z]/;
-    const numberRegex = /[0-9]/;
-    
-    if (cyrillicRegex.test(lastChar)) {
-      langIndicator.textContent = 'УКР';
-      langIndicator.title = 'Українська мова';
-    } else if (latinRegex.test(lastChar)) {
-      langIndicator.textContent = 'ENG';
-      langIndicator.title = 'English language';
-    } else if (numberRegex.test(lastChar)) {
-      langIndicator.textContent = 'NUM';
-      langIndicator.title = 'Numbers and symbols';
-    } else {
-      langIndicator.textContent = '123';
-      langIndicator.title = 'Special characters';
-    }
-  },
-
-  async authenticate(input) {
-    const storedHash = storage.getLocal(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
-    const correctHash = storedHash || this.defaultPasswordHash;
-    const rememberMe = document.getElementById('rememberMe')?.checked;
-    const authError = document.getElementById('authError');
-    const authAttempts = document.getElementById('authAttempts');
-    const authPassword = document.getElementById('authPassword');
-
-    // Перевірити кількість спроб
-    const now = Date.now();
-    const storedAttemptsRaw = storage.getLocal(AUTH_CONFIG.STORAGE_ATTEMPTS_KEY);
-    if (storedAttemptsRaw) {
-      try {
-        const parsed = JSON.parse(storedAttemptsRaw);
-        if (parsed && typeof parsed === 'object') {
-          this.failedAttempts = Number(parsed.count) || 0;
-          this.attemptTimestamp = Number(parsed.ts) || 0;
-        }
-      } catch (e) {}
-    }
-
-    if (this.attemptTimestamp && now - this.attemptTimestamp < AUTH_CONFIG.ATTEMPT_RESET_TIME) {
-      if (this.failedAttempts >= AUTH_CONFIG.MAX_ATTEMPTS) {
-        authError.textContent = '❌ Забагато спроб. Спробуйте пізніше.';
-        authError.style.display = 'block';
-        return;
-      }
-    } else {
-      this.failedAttempts = 0;
-    }
-
-    // Перевірити пароль
-    const isCorrect = await PasswordHasher.verifyPassword(input, correctHash);
-    if (isCorrect) {
-      this.isAuthenticated = true;
-      this.failedAttempts = 0;
-      
-      // Встановити пароль для шифрування БД
-      ENCRYPTION_PASSWORD = input;
-      await loadDatabase();
-
-      // Встановити сесію
-      storage.removeLocal(AUTH_CONFIG.STORAGE_ATTEMPTS_KEY);
-      if (rememberMe) {
-        const sessionToken = 'session_' + Date.now();
-        const okToken = storage.setLocal(AUTH_CONFIG.STORAGE_SESSION_KEY, sessionToken);
-        const okPwd = storage.setLocal('_session_pwd', input);
-        storage.removeSession(AUTH_CONFIG.STORAGE_SESSION_KEY);
-        storage.removeSession('_session_pwd');
-        if (!okToken || !okPwd) {
-          storage.removeLocal(AUTH_CONFIG.STORAGE_SESSION_KEY);
-          storage.removeLocal('_session_pwd');
-          storage.setSession(AUTH_CONFIG.STORAGE_SESSION_KEY, 'temporary');
-          storage.setSession('_session_pwd', input);
-          showStorageWarning('⚠️ Браузер блокує збереження. Сесію збережено лише до закриття вкладки.');
-        }
-      } else {
-        storage.setSession(AUTH_CONFIG.STORAGE_SESSION_KEY, 'temporary');
-        // Зберегти пароль у sessionStorage для відновлення сесії
-        storage.setSession('_session_pwd', input);
-        storage.removeLocal(AUTH_CONFIG.STORAGE_SESSION_KEY);
-        storage.removeLocal('_session_pwd');
-      }
-
-      this.hideAuthModal();
-      app.init();
-      app.showToast('✓ Авторизація успішна');
-    } else {
-      this.failedAttempts++;
-      this.attemptTimestamp = now;
-      storage.setLocal(AUTH_CONFIG.STORAGE_ATTEMPTS_KEY, JSON.stringify({
-        count: this.failedAttempts,
-        ts: this.attemptTimestamp
-      }));
-      const remaining = AUTH_CONFIG.MAX_ATTEMPTS - this.failedAttempts;
-
-      authError.textContent = '❌ Невірне кодове слово';
-      authError.style.display = 'block';
-      authPassword.value = '';
-      authPassword.focus();
-
-      if (remaining > 0) {
-        authAttempts.textContent = `Залишилось спроб: ${remaining}`;
-      }
-    }
-  },
-
-  hideAuthModal() {
-    const authOverlay = document.getElementById('authOverlay');
-    if (authOverlay) {
-      authOverlay.style.display = 'none';
-    }
-  },
-
-  logout() {
-    storage.removeLocal(AUTH_CONFIG.STORAGE_SESSION_KEY);
-    storage.removeLocal('_session_pwd');
-    storage.removeSession(AUTH_CONFIG.STORAGE_SESSION_KEY);
-    storage.removeSession('_session_pwd');
-    this.isAuthenticated = false;
-    location.reload();
+    await loadDatabase();
+    app.init();
   }
 };
 
@@ -2611,17 +2067,8 @@ addEventListenerSafe('btnCloseAdmin', 'click', () => app.toggleAdmin());
 addEventListenerSafe('btnPrices', 'click', () => prices.show());
 addEventListenerSafe('btnClosePrices', 'click', () => prices.hide());
 addEventListenerSafe('btnResetPrices', 'click', () => prices.reset());
-addEventListenerSafe('btnSecurity', 'click', () => security.show());
-addEventListenerSafe('btnCloseSecurity', 'click', () => security.hide());
-addEventListenerSafe('btnChangePassword', 'click', () => security.changePassword());
-addEventListenerSafe('btnResetPassword', 'click', () => security.resetPassword());
 addEventListenerSafe('btnAbout', 'click', () => about.show());
 addEventListenerSafe('btnCloseAbout', 'click', () => about.hide());
-addEventListenerSafe('btnLogout', 'click', () => {
-  if (confirm('Ви впевнені, що хочете вийти?')) {
-    auth.logout();
-  }
-});
 addEventListenerSafe('btnTheme', 'click', () => app.toggleTheme());
 addEventListenerSafe('btnSaveAdmin', 'click', () => admin.save());
 addEventListenerSafe('btnResetAdmin', 'click', () => admin.reset());
@@ -2840,9 +2287,9 @@ const prices = {
   // Завантажити ціни з localStorage
   async loadPrices() {
     const saved = storage.getLocal('castello_prices') || storage.getSession('castello_prices');
-    if (saved && ENCRYPTION_PASSWORD) {
+    if (saved) {
       try {
-        const loaded = await StorageEncryption.decrypt(saved, ENCRYPTION_PASSWORD + '_prices');
+        const loaded = JSON.parse(saved);
         if (loaded) Object.assign(COST_PRICES, loaded);
       } catch (e) {
         console.warn('Помилка завантаження цін');
@@ -2851,9 +2298,9 @@ const prices = {
     
     // Завантажити ціни продажу
     const savedSellPrices = storage.getLocal('castello_sell_prices') || storage.getSession('castello_sell_prices');
-    if (savedSellPrices && ENCRYPTION_PASSWORD) {
+    if (savedSellPrices) {
       try {
-        const loaded = await StorageEncryption.decrypt(savedSellPrices, ENCRYPTION_PASSWORD + '_sell');
+        const loaded = JSON.parse(savedSellPrices);
         if (loaded) this.weaponSellPrices = loaded;
       } catch (e) {
         console.warn('Помилка завантаження цін продажу');
@@ -2867,33 +2314,25 @@ const prices = {
     }
   },
 
-  // Зберегти ціни в localStorage (зашифровані)
+  // Зберегти ціни в localStorage
   async savePrices() {
-    if (ENCRYPTION_PASSWORD) {
-      const encrypted = await StorageEncryption.encrypt(COST_PRICES, ENCRYPTION_PASSWORD + '_prices');
-      if (encrypted) {
-        if (!storage.setLocal('castello_prices', encrypted)) {
-          showStorageWarning('⚠️ Браузер блокує збереження цін. Дані будуть збережені лише на цей сеанс.');
-          storage.setSession('castello_prices', encrypted);
-        } else {
-          storage.removeSession('castello_prices');
-        }
-      }
+    const raw = JSON.stringify(COST_PRICES);
+    if (!storage.setLocal('castello_prices', raw)) {
+      showStorageWarning('⚠️ Браузер блокує збереження цін. Дані будуть збережені лише на цей сеанс.');
+      storage.setSession('castello_prices', raw);
+    } else {
+      storage.removeSession('castello_prices');
     }
   },
 
-  // Зберегти ціни продажу (зашифровані)
+  // Зберегти ціни продажу
   async saveSellPrices() {
-    if (ENCRYPTION_PASSWORD) {
-      const encrypted = await StorageEncryption.encrypt(this.weaponSellPrices, ENCRYPTION_PASSWORD + '_sell');
-      if (encrypted) {
-        if (!storage.setLocal('castello_sell_prices', encrypted)) {
-          showStorageWarning('⚠️ Браузер блокує збереження цін продажу. Дані будуть збережені лише на цей сеанс.');
-          storage.setSession('castello_sell_prices', encrypted);
-        } else {
-          storage.removeSession('castello_sell_prices');
-        }
-      }
+    const raw = JSON.stringify(this.weaponSellPrices);
+    if (!storage.setLocal('castello_sell_prices', raw)) {
+      showStorageWarning('⚠️ Браузер блокує збереження цін продажу. Дані будуть збережені лише на цей сеанс.');
+      storage.setSession('castello_sell_prices', raw);
+    } else {
+      storage.removeSession('castello_sell_prices');
     }
   },
 
@@ -3103,77 +2542,6 @@ const prices = {
   }
 };
 
-/* --- SECURITY CONTROLLER --- */
-const security = {
-  show() {
-    const modal = document.getElementById('securityModal');
-    if (!modal) return;
-    
-    // Оновити поточний пароль (повністю замаскований для безпеки)
-    const storedHash = storage.getLocal(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
-    if (storedHash) {
-      document.getElementById('currentPassword').value = '••••••••';
-    }
-    
-    modal.classList.remove('hidden');
-  },
-
-  hide() {
-    const modal = document.getElementById('securityModal');
-    if (modal) modal.classList.add('hidden');
-    
-    // Очистити форму
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
-    document.getElementById('securityError').style.display = 'none';
-  },
-
-  async changePassword() {
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const securityError = document.getElementById('securityError');
-
-    // Валідація
-    if (newPassword.length < 4) {
-      securityError.textContent = '⚠️ Пароль повинен мати мінімум 4 символи';
-      securityError.style.display = 'block';
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      securityError.textContent = '⚠️ Паролі не збігаються';
-      securityError.style.display = 'block';
-      return;
-    }
-
-    // Зберегти хеш нового пароля
-    const hash = await PasswordHasher.hashPassword(newPassword);
-    if (!storage.setLocal(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY, hash)) {
-      showStorageWarning('⚠️ Браузер блокує збереження пароля. Після закриття вкладки пароль не збережеться.');
-      storage.setSession(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY, hash);
-    } else {
-      storage.removeSession(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
-    }
-    securityError.style.display = 'none';
-    
-    app.showToast('✓ Пароль змінено успішно');
-    
-    // Очистити форму через 1 сек та закрити
-    setTimeout(() => {
-      this.hide();
-    }, 1000);
-  },
-
-  resetPassword() {
-    if (confirm(`Встановити стандартний пароль (${AUTH_CONFIG.DEFAULT_PASSWORD})?`)) {
-      storage.removeLocal(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
-      storage.removeSession(AUTH_CONFIG.STORAGE_PASSWORD_HASH_KEY);
-      app.showToast('✓ Пароль скинуто на стандартний');
-      this.hide();
-    }
-  }
-};
-
 /* --- ABOUT CONTROLLER --- */
 const about = {
   show() {
@@ -3230,19 +2598,13 @@ const about = {
       </div>
 
       <div style="padding-top: 15px; border-top: 1px solid rgba(195, 154, 107, 0.2); margin-top: 15px;">
-        <h4 class="section-title" style="margin-bottom: 12px;"><i class="ri-shield-check-line"></i> Безпека</h4>
+        <h4 class="section-title" style="margin-bottom: 12px;"><i class="ri-shield-check-line"></i> Дані</h4>
         <div style="font-size: 12px; color: var(--text-main); line-height: 1.6;">
-          <p style="margin: 0 0 8px 0;"><strong>🔐 Шифрування:</strong></p>
+          <p style="margin: 0 0 8px 0;"><strong>📦 Зберігання:</strong></p>
           <p style="margin: 0 0 8px 0; padding-left: 12px; color: var(--text-muted);">
-            • База даних: AES-GCM 256-bit<br>
-            • Пароль: SHA-256 хеш<br>
-            • Ключ: PBKDF2 з 100,000 ітераціями
-          </p>
-          <p style="margin: 0 0 8px 0;"><strong>🛡️ Дані:</strong></p>
-          <p style="margin: 0 0 8px 0; padding-left: 12px; color: var(--text-muted);">
-            • Усі дані зберігаються зашифровані<br>
-            • DevTools не показує чутливої інформації<br>
-            • Безпечне керування сеансами
+            • Дані зберігаються локально в браузері<br>
+            • Шифрування вимкнено<br>
+            • За потреби очищуйте кеш браузера
           </p>
         </div>
       </div>
