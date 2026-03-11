@@ -336,6 +336,7 @@ input::placeholder, textarea::placeholder {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateX(0);
+  position: relative;
 }
 .recipe-item:hover { 
     border-color: var(--primary); 
@@ -348,6 +349,14 @@ input::placeholder, textarea::placeholder {
     background: rgba(154, 46, 46, 0.3); 
     box-shadow: 0 0 8px var(--secondary), inset 0 0 0 1px var(--secondary);
     transform: translateX(2px);
+}
+.recipe-item.active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(154, 46, 46, 0.35);
+    pointer-events: none;
 }
 .item-info h4 { 
     margin: 0; font-size: 16px; 
@@ -370,6 +379,11 @@ input::placeholder, textarea::placeholder {
     letter-spacing: 2px;
     margin: 0 0 8px 0;
     text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(195, 154, 107, 0.18), rgba(0,0,0,0.2));
+    border: 1px solid rgba(195, 154, 107, 0.25);
 }
 /* Декоративний роздільник */
 .decorative-hr {
@@ -443,6 +457,14 @@ input::placeholder, textarea::placeholder {
     font-weight: 700;
     position: relative;
     padding-bottom: 8px;
+}
+.section-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  box-shadow: 0 0 8px rgba(195, 154, 107, 0.35);
 }
 .section-title::after {
   content: '';
@@ -651,6 +673,38 @@ input::placeholder, textarea::placeholder {
 }
 .hidden { display: none !important; }
 
+.modal-panel {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.price-grid,
+.modal-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+}
+
 /* --- TOAST --- */
 #toast {
     position: fixed;
@@ -694,6 +748,31 @@ input::placeholder, textarea::placeholder {
 }
 #toast.error i { 
     color: var(--danger); 
+}
+
+#btnPrices {
+  background: linear-gradient(135deg, rgba(195, 154, 107, 0.95), rgba(245, 230, 163, 0.9));
+  border-color: var(--accent);
+  color: #1b1b1b;
+  box-shadow: 0 6px 18px rgba(195, 154, 107, 0.35);
+}
+#btnPrices:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(195, 154, 107, 0.5);
+}
+
+.footer-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(195, 154, 107, 0.15);
+  border: 1px solid rgba(195, 154, 107, 0.25);
+  color: var(--accent);
+  font-size: 11px;
+  margin-top: 6px;
 }
 
 
@@ -940,6 +1019,10 @@ input::placeholder, textarea::placeholder {
   
   .modal-header h3 {
     font-size: 14px;
+  }
+  .price-grid,
+  .modal-two {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1280,69 +1363,78 @@ input::placeholder, textarea::placeholder {
     </div>
 
     <div class="author-footer" style="margin-top: auto;">
-      <div style="margin-bottom: 4px; cursor: pointer;" id="authorLink">🎨 <span style="color: var(--accent); font-weight: 700; transition: color 0.2s;" id="authorName">Sergio Castello</span></div>
+      <div style="margin-bottom: 4px; cursor: pointer;" id="authorLink" title="Відкрити Discord">🎨 <span style="color: var(--accent); font-weight: 700; transition: color 0.2s;" id="authorName">Sergio Castello</span></div>
       <div>Forge RP 🔥</div>
-      <div id="lastUpdated" style="margin-top: 4px;">Оновлено: --</div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+        <span id="lastUpdated" style="font-size: 10px; color: var(--text-muted);">Оновлено: --</span>
+        <span id="storageStatus" class="footer-status" title="Збереження: --">💾</span>
+      </div>
     </div>
   </main>
 </div>
 
-<div id="pricesModal" class="modal-overlay hidden">
+  <div id="pricesModal" class="modal-overlay hidden">
   <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
     <div class="modal-header">
       <h3 class="section-title" style="margin:0"><i class="ri-price-tag-3-line"></i> Управління цінами ресурсів</h3>
       <button class="btn-ghost btn-icon" id="btnClosePrices"><i class="ri-close-line"></i></button>
     </div>
     <div class="modal-content">
-      <h4 class="section-title" style="margin-top: 0;"><i class="ri-file-list-line"></i> Золото та срібло</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток золота</label>
-          <input type="number" class="price-input" data-key="Злиток золота" placeholder="$" min="0">
-        </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток Срібла</label>
-          <input type="number" class="price-input" data-key="Злиток Срібла" placeholder="$" min="0">
-        </div>
-      </div>
-
-      <h4 class="section-title"><i class="ri-tools-line"></i> Основні злитки</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток сталі</label>
-          <input type="number" class="price-input" data-key="Злиток сталі" placeholder="$" min="0">
-        </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток заліза</label>
-          <input type="number" class="price-input" data-key="Злиток заліза" placeholder="$" min="0">
-        </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток латуні</label>
-          <input type="number" class="price-input" data-key="Злиток латуні" placeholder="$" min="0">
-        </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток міді</label>
-          <input type="number" class="price-input" data-key="Злиток міді" placeholder="$" min="0">
-        </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток свинцю</label>
-          <input type="number" class="price-input" data-key="Злиток свинцю" placeholder="$" min="0">
-        </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Злиток цинку</label>
-          <input type="number" class="price-input" data-key="Злиток цинку" placeholder="$" min="0">
+      <div class="modal-panel">
+        <h4 class="section-title" style="margin-top: 0;"><i class="ri-file-list-line"></i> Золото та срібло</h4>
+        <div class="price-grid">
+          <div class="field">
+            <label>Злиток золота</label>
+            <input type="number" class="price-input" data-key="Злиток золота" placeholder="$" min="0">
+          </div>
+          <div class="field">
+            <label>Злиток Срібла</label>
+            <input type="number" class="price-input" data-key="Злиток Срібла" placeholder="$" min="0">
+          </div>
         </div>
       </div>
 
-      <h4 class="section-title"><i class="ri-fire-line"></i> Сировина</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Вугілля</label>
-          <input type="number" class="price-input" data-key="Вугілля" placeholder="$" min="0" step="0.1">
+      <div class="modal-panel" style="margin-top: 12px;">
+        <h4 class="section-title"><i class="ri-tools-line"></i> Основні злитки</h4>
+        <div class="price-grid">
+          <div class="field">
+            <label>Злиток сталі</label>
+            <input type="number" class="price-input" data-key="Злиток сталі" placeholder="$" min="0">
+          </div>
+          <div class="field">
+            <label>Злиток заліза</label>
+            <input type="number" class="price-input" data-key="Злиток заліза" placeholder="$" min="0">
+          </div>
+          <div class="field">
+            <label>Злиток латуні</label>
+            <input type="number" class="price-input" data-key="Злиток латуні" placeholder="$" min="0">
+          </div>
+          <div class="field">
+            <label>Злиток міді</label>
+            <input type="number" class="price-input" data-key="Злиток міді" placeholder="$" min="0">
+          </div>
+          <div class="field">
+            <label>Злиток свинцю</label>
+            <input type="number" class="price-input" data-key="Злиток свинцю" placeholder="$" min="0">
+          </div>
+          <div class="field">
+            <label>Злиток цинку</label>
+            <input type="number" class="price-input" data-key="Злиток цинку" placeholder="$" min="0">
+          </div>
         </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Форма з глини</label>
-          <input type="number" class="price-input" data-key="Форма з глини" placeholder="$" min="0">
+      </div>
+
+      <div class="modal-panel" style="margin-top: 12px;">
+        <h4 class="section-title"><i class="ri-fire-line"></i> Сировина</h4>
+        <div class="price-grid">
+          <div class="field">
+            <label>Вугілля</label>
+            <input type="number" class="price-input" data-key="Вугілля" placeholder="$" min="0" step="0.1">
+          </div>
+          <div class="field">
+            <label>Форма з глини</label>
+            <input type="number" class="price-input" data-key="Форма з глини" placeholder="$" min="0">
+          </div>
         </div>
       </div>
 
@@ -1370,17 +1462,30 @@ input::placeholder, textarea::placeholder {
       <button class="btn-ghost btn-icon" id="btnCloseAdmin"><i class="ri-close-line"></i></button>
     </div>
     <div class="modal-content">
-      <input id="admName" placeholder="Назва предмета">
-      <select id="admCat">
-        <option value="Гвинтівка">Гвинтівка</option>
-        <option value="Дробовик">Дробовик</option>
-        <option value="Револьвер">Револьвер</option>
-        <option value="Ріпітер">Ріпітер</option>
-        <option value="Інструменти">Інструменти</option>
-        <option value="Інше">Інше</option>
-      </select>
-      <textarea id="admRes" rows="6" placeholder="Ресурси (один на рядок), напр:&#10;Дуло:1&#10;Злиток заліза:5"></textarea>
-      <div style="color: var(--text-muted); font-size: 11px;">Автозбереження увімкнено</div>
+      <div class="modal-panel">
+        <div class="modal-two">
+          <div class="field">
+            <label>Назва предмета</label>
+            <input id="admName" placeholder="Назва предмета">
+          </div>
+          <div class="field">
+            <label>Категорія</label>
+            <select id="admCat">
+              <option value="Гвинтівка">Гвинтівка</option>
+              <option value="Дробовик">Дробовик</option>
+              <option value="Револьвер">Револьвер</option>
+              <option value="Ріпітер">Ріпітер</option>
+              <option value="Інструменти">Інструменти</option>
+              <option value="Інше">Інше</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-top: 10px;">
+          <label>Ресурси</label>
+          <textarea id="admRes" rows="6" placeholder="Один на рядок, напр:&#10;Дуло:1&#10;Злиток заліза:5"></textarea>
+        </div>
+        <div class="stat-meta" style="margin-top: 8px;">Автозбереження увімкнено</div>
+      </div>
       
       <div class="modal-actions">
         <button class="btn-primary" id="btnSaveAdmin">Зберегти</button>
@@ -1429,7 +1534,6 @@ const RECIPES_DATA = {
     "Корпус легкої зброї": {"Злиток заліза":1,"Злиток сталі":1,"Дерево":5,"Шуруп":5}
   },
   recipes: [
-    {id:1,name:"Ремонтний набір",cat:"Інструменти",resources:{"Злиток заліза":1,"Тканина":5,"Дерево":1,"Шуруп":5,"Пружина":2}},
     {id:2,name:"Гвинтівка Boltaction",cat:"Гвинтівка",resources:{"Корпус важкої зброї":1,"Дуло":1,"Дерево":25,"Шуруп":10,"Пружина":3,"Злиток сталі":4}},
     {id:3,name:"Гвинтівка Springfield",cat:"Гвинтівка",resources:{"Корпус важкої зброї":1,"Дуло":1,"Дерево":20,"Шуруп":10,"Пружина":3,"Злиток сталі":4}},
     {id:4,name:"Дробовик Double Barrel",cat:"Дробовик",resources:{"Корпус важкої зброї":1,"Дуло":2,"Дерево":5,"Шуруп":20,"Пружина":2,"Злиток сталі":3}},
@@ -1444,7 +1548,8 @@ const RECIPES_DATA = {
     {id:13,name:"Ріпітер Carbine",cat:"Ріпітер",resources:{"Корпус важкої зброї":1,"Дуло":1,"Дерево":5,"Шуруп":15,"Пружина":4,"Злиток сталі":3}},
     {id:14,name:"Ріпітер Evans",cat:"Ріпітер",resources:{"Корпус важкої зброї":1,"Дуло":1,"Дерево":10,"Шуруп":15,"Пружина":4,"Злиток сталі":3}},
     {id:15,name:"Ріпітер Lancaster",cat:"Ріпітер",resources:{"Корпус важкої зброї":1,"Дуло":2,"Дерево":5,"Шуруп":15,"Пружина":4,"Злиток сталі":3}},
-    {id:16,name:"Ріпітер Lichfield",cat:"Ріпітер",resources:{"Корпус важкої зброї":1,"Дуло":2,"Дерево":5,"Шуруп":15,"Пружина":4,"Злиток сталі":3}}
+    {id:16,name:"Ріпітер Lichfield",cat:"Ріпітер",resources:{"Корпус важкої зброї":1,"Дуло":2,"Дерево":5,"Шуруп":15,"Пружина":4,"Злиток сталі":3}},
+    {id:1,name:"Ремонтний набір",cat:"Інструменти",resources:{"Злиток заліза":1,"Тканина":5,"Дерево":1,"Шуруп":5,"Пружина":2}}
   ]
 };
 
@@ -1503,12 +1608,14 @@ async function saveDatabase() {
       const nowIso = new Date().toISOString();
       storage.setSession(CONFIG.LAST_UPDATED_KEY, nowIso);
       updateLastUpdatedUI(nowIso);
+      updateStorageStatusUI();
     } else {
       storage.removeSession(CONFIG.STORAGE_KEY);
       const nowIso = new Date().toISOString();
       storage.setLocal(CONFIG.LAST_UPDATED_KEY, nowIso);
       storage.removeSession(CONFIG.LAST_UPDATED_KEY);
       updateLastUpdatedUI(nowIso);
+      updateStorageStatusUI();
     }
   } catch (e) {
     console.error('Помилка при збереженні БД:', e);
@@ -1726,6 +1833,18 @@ const updateLastUpdatedUI = (value) => {
   el.textContent = `Оновлено: ${dt.toLocaleString('uk-UA')}`;
 };
 
+const updateStorageStatusUI = () => {
+  const el = document.getElementById('storageStatus');
+  if (!el) return;
+  if (storage.getLocal(CONFIG.STORAGE_KEY)) {
+    el.title = 'Збереження: локально';
+  } else if (storage.getSession(CONFIG.STORAGE_KEY)) {
+    el.title = 'Збереження: лише сесія';
+  } else {
+    el.title = 'Збереження: --';
+  }
+};
+
 
 const calc = {
   add(target, key, qty) {
@@ -1825,6 +1944,7 @@ const app = {
     }
     app.renderList();
     updateLastUpdatedUI(storage.getLocal(CONFIG.LAST_UPDATED_KEY) || storage.getSession(CONFIG.LAST_UPDATED_KEY));
+    updateStorageStatusUI();
     utils.saveToHistory();
   },
 
@@ -2127,16 +2247,11 @@ addEventListenerSafe('admName', 'input', () => debouncedAdminSave());
 addEventListenerSafe('admCat', 'change', () => debouncedAdminSave());
 addEventListenerSafe('admRes', 'input', () => debouncedAdminSave());
 
-// Копіювання нікнейму при натисканні на ім'я автора
 const authorLink = document.getElementById('authorLink');
 if (authorLink) {
   authorLink.addEventListener('click', () => {
-    const username = 'sergio_rec';
-    navigator.clipboard.writeText(username).then(() => {
-      app.showToast(`✓ Скопійовано: ${username}`);
-    }).catch(() => {
-      app.showToast('Помилка копіювання', true);
-    });
+    const discordUrl = 'https://discord.com/users/995220367285178368';
+    window.open(discordUrl, '_blank', 'noopener');
   });
   
   // Зміна курсору при наведенні
