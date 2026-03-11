@@ -481,6 +481,107 @@ input::placeholder, textarea::placeholder {
     border-radius: 8px;
 }
 
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.stat-card {
+  position: relative;
+  border: 1px solid rgba(195, 154, 107, 0.18);
+  border-radius: 10px;
+  padding: 12px 12px 14px;
+  background: linear-gradient(135deg, rgba(195, 154, 107, 0.08), rgba(0,0,0,0.2));
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--accent);
+  text-shadow: 0 4px 12px rgba(195, 154, 107, 0.3);
+}
+
+.stat-value.profit {
+  color: var(--success);
+}
+
+.stat-card.profit-positive {
+  box-shadow:
+    0 0 12px rgba(103, 166, 110, 0.25),
+    0 0 24px rgba(103, 166, 110, 0.15),
+    0 8px 20px rgba(0,0,0,0.35);
+  border-color: rgba(103, 166, 110, 0.35);
+}
+
+.stat-card.profit-negative {
+  background: linear-gradient(135deg, rgba(212, 78, 78, 0.12), rgba(0,0,0,0.25));
+  border-color: rgba(212, 78, 78, 0.45);
+  box-shadow:
+    0 0 10px rgba(212, 78, 78, 0.25),
+    0 0 18px rgba(212, 78, 78, 0.18),
+    0 8px 20px rgba(0,0,0,0.35);
+}
+
+.stat-card.profit-negative .stat-value {
+  color: var(--danger);
+}
+
+@keyframes profitPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+
+.profit-pulse {
+  animation: profitPulse 0.25s ease-out;
+}
+
+@media (max-width: 640px) {
+  .stat-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.price-setter {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.price-input {
+  min-width: 0;
+}
+
+.stat-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--secondary), transparent);
+  margin: 12px 0;
+  border-radius: 999px;
+  opacity: 0.7;
+}
+
 /* --- MODAL STYLES --- */
 .modal-overlay {
     position: fixed;
@@ -1134,23 +1235,27 @@ input::placeholder, textarea::placeholder {
       <hr class="decorative-hr">
       
       <h3 class="section-title"><i class="ri-hand-coin-line"></i> Собівартість предмета</h3>
-      <div id="dCost" class="cost-display">$0</div>
+      <div class="stat-card">
+        <div class="stat-label"><i class="ri-coin-line"></i> Загальна собівартість</div>
+        <div id="dCost" class="stat-value">$0</div>
+        <div class="stat-meta">Розрахунок на 1 одиницю виробу</div>
+      </div>
       
-       <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-         <div>
-          <div style="display:flex; align-items:center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
-            <label style="color: var(--text-muted); font-size: 12px;">Ваша ціна продажу</label>
-            <span class="badge">Ціна</span>
+      <div class="stat-divider"></div>
+      
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label"><i class="ri-price-tag-3-line"></i> Ваша ціна продажу</div>
+          <div class="price-setter">
+            <input type="number" id="detailSellPrice" class="price-input" placeholder="Введіть ціну" min="0">
+            <button class="btn-primary" id="btnSetDetailPrice">Встановити</button>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; margin-bottom: 8px;">
-            <input type="number" id="detailSellPrice" placeholder="Введіть ціну" min="0" style="flex: 1;">
-            <button class="btn-primary" id="btnSetDetailPrice" style="white-space: nowrap;">Встановити</button>
-          </div>
-          <div id="dSellPrice" class="cost-display" style="font-size: 24px;">$0</div>
+          <div id="dSellPrice" class="stat-value" style="margin-top: 10px;">$0</div>
         </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Прибуток</label>
-          <div id="dProfit" class="cost-display" style="font-size: 24px; color: var(--success);">$0</div>
+        <div class="stat-card" id="profitCard">
+          <div class="stat-label"><i class="ri-line-chart-line"></i> Прибуток</div>
+          <div id="dProfit" class="stat-value profit">$0</div>
+          <div class="stat-meta">Після вирахування собівартості</div>
         </div>
       </div>
       
@@ -2285,6 +2390,14 @@ const prices = {
     dSellPrice.textContent = `$${totalSellPrice.toFixed(2)}`;
     dProfit.textContent = `$${profit.toFixed(2)}`;
     dProfit.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+    const profitCard = document.getElementById('profitCard');
+    if (profitCard) {
+      profitCard.classList.toggle('profit-positive', profit >= 0);
+      profitCard.classList.toggle('profit-negative', profit < 0);
+      profitCard.classList.remove('profit-pulse');
+      void profitCard.offsetWidth;
+      profitCard.classList.add('profit-pulse');
+    }
   },
 
   // Перемалювати форму з цінами
