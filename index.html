@@ -2382,6 +2382,30 @@ const applyMobileMode = () => {
   const width = Math.min(window.innerWidth || 0, window.screen?.width || 0) || window.innerWidth;
   const shouldUseMobile = width <= 720;
   document.body.classList.toggle('mobile-mode', shouldUseMobile);
+  if (!shouldUseMobile) return;
+
+  // Hard override for stubborn mobile rendering (inline styles win)
+  const appContainer = document.querySelector('.app-container');
+  const panelL = document.querySelector('.panel-l');
+  const panelM = document.querySelector('.panel-m');
+  const mobileNav = document.querySelector('.mobile-nav');
+
+  if (appContainer) {
+    appContainer.style.display = 'flex';
+    appContainer.style.flexDirection = 'column';
+    appContainer.style.height = '100vh';
+    appContainer.style.width = '100%';
+  }
+  if (panelL) {
+    panelL.style.display = 'flex';
+    panelL.classList.add('active-tab');
+  }
+  if (panelM) {
+    panelM.style.display = 'none';
+  }
+  if (mobileNav) {
+    mobileNav.style.display = 'flex';
+  }
 };
 
 let mobileResizeTimer;
