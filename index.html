@@ -26,6 +26,10 @@
 
 * { box-sizing: border-box; outline: none; }
 
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: var(--font-title);
@@ -53,9 +57,11 @@ body {
 .app-container {
   display: grid;
   grid-template-columns: 320px 1fr;
-  grid-template-rows: 60px 1fr;
+  grid-template-rows: auto 1fr;
   height: 100%;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* --- HEADER --- */
@@ -97,6 +103,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  min-height: 0;
 }
 .panel-l { 
     border-right: 1px solid var(--border); 
@@ -132,7 +139,7 @@ header {
 }
 
 /* --- MOBILE NAV --- */
-@media (min-width: 769px) {
+@media (min-width: 641px) {
   .mobile-nav {
     display: none !important;
   }
@@ -858,8 +865,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     flex-direction: column;
     height: 100%;
-    grid-template-columns: none;
-    grid-template-rows: none;
+    width: 100%;
   }
   
   header {
@@ -874,20 +880,20 @@ input::placeholder, textarea::placeholder {
   }
   
   .panel-l {
-    display: flex;
-    flex: 1;
-  }
-  
-  .panel-l.active-tab {
-    display: flex;
+    display: none;
     flex: 1;
     overflow-y: auto;
+    border-right: none;
   }
   
   .panel-m {
     display: none;
     flex: 1;
     overflow-y: auto;
+  }
+  
+  .panel-l.active-tab {
+    display: flex;
   }
   
   .panel-m.active-tab {
@@ -901,6 +907,7 @@ input::placeholder, textarea::placeholder {
     border-bottom: 2px solid var(--border);
     padding-bottom: 0;
     flex-shrink: 0;
+    background: var(--bg-panel);
   }
   
   .mobile-nav-btn {
@@ -1296,12 +1303,13 @@ input::placeholder, textarea::placeholder {
     </div>
   </header>
 
-  <aside class="panel panel-l">
+  <div class="mobile-nav">
+    <button class="mobile-nav-btn active" id="navList"><i class="ri-list-check-2"></i> Список</button>
+    <button class="mobile-nav-btn" id="navDetails"><i class="ri-file-list-line"></i> Деталі</button>
+  </div>
+
+  <aside class="panel panel-l active-tab">
     <div id="recipeList" style="flex: 1;"></div>
-    <div class="mobile-nav">
-      <button class="mobile-nav-btn active" id="navList"><i class="ri-list-check-2"></i> Список</button>
-      <button class="mobile-nav-btn" id="navDetails"><i class="ri-file-list-line"></i> Деталі</button>
-    </div>
   </aside>
 
   <main class="panel panel-m" id="detailPanel">
