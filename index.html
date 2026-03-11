@@ -2000,6 +2000,7 @@ const calc = {
 const auth = {
   async init() {
     await loadDatabase();
+    await prices.loadPrices();
     app.init();
   }
 };
