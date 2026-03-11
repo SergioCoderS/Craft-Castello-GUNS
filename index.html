@@ -335,6 +335,8 @@ body.mobile-mode {
   .panel-m {
     display: flex;
     border: none;
+    width: 100%;
+    max-width: 100%;
   }
 
   .panel-l.active-tab,
@@ -2424,9 +2426,13 @@ const applyMobileMode = () => {
   }
   if (panelL) {
     panelL.style.display = 'flex';
+    panelL.style.width = '100%';
+    panelL.style.maxWidth = '100%';
   }
   if (panelM) {
     panelM.style.display = 'flex';
+    panelM.style.width = '100%';
+    panelM.style.maxWidth = '100%';
   }
   if (mobileNav) {
     mobileNav.style.display = 'none';
