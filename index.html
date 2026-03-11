@@ -57,7 +57,7 @@ body {
 .app-container {
   display: grid;
   grid-template-columns: 320px 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: 60px 1fr;
   height: 100%;
   width: 100%;
   flex: 1 1 auto;
@@ -139,7 +139,7 @@ header {
 }
 
 /* --- MOBILE NAV --- */
-@media (min-width: 901px) {
+@media (min-width: 641px) {
   .mobile-nav {
     display: none !important;
   }
@@ -783,8 +783,8 @@ input::placeholder, textarea::placeholder {
 }
 
 
-/* --- MOBILE LAYOUT (from scratch, 900px and below) --- */
-@media (max-width: 900px) {
+/* --- MOBILE LAYOUT (from scratch, 640px and below) --- */
+@media (max-width: 640px) {
   body {
     height: 100vh;
     overflow: hidden;
@@ -2248,7 +2248,7 @@ if (isTouchDevice()) {
 
 /* Мобільна навігація (перемикання між списком і деталями) */
 const setupMobileNav = () => {
-  if (window.innerWidth > 900) return;
+  if (window.innerWidth > 640) return;
   
   const mobileNav = document.querySelector('.mobile-nav');
   const panelL = document.querySelector('.panel-l');
@@ -2281,7 +2281,7 @@ const setupMobileNav = () => {
 
   app.select = function(id) {
     originalSelect.call(this, id);
-    if (window.innerWidth <= 900) {
+    if (window.innerWidth <= 640) {
       setTimeout(switchToDetails, 50);
     }
   };
