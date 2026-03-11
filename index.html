@@ -1581,7 +1581,8 @@ const COST_PRICES = {
 let DB;
 async function loadDatabase() {
   try {
-    const raw = storage.getLocal(CONFIG.STORAGE_KEY) || storage.getSession(CONFIG.STORAGE_KEY);
+    const raw = storage.getLocal(CONFIG.STORAGE_KEY) || storage.getSession(CONFIG.STORAGE_KEY)
+      || await dbStore.get(CONFIG.STORAGE_KEY);
     if (raw) {
       try {
         DB = JSON.parse(raw) || RECIPES_DATA;
@@ -1617,6 +1618,7 @@ async function saveDatabase() {
       updateLastUpdatedUI(nowIso);
       updateStorageStatusUI();
     }
+    await dbStore.set(CONFIG.STORAGE_KEY, raw);
   } catch (e) {
     console.error('Помилка при збереженні БД:', e);
   }
@@ -1832,6 +1834,74 @@ const updateLastUpdatedUI = (value) => {
   }
   el.textContent = `Оновлено: ${dt.toLocaleString('uk-UA')}`;
 };
+
+const dbStore = (() => {
+  const DB_NAME = 'castello_db';
+  const STORE = 'kv';
+  const VERSION = 1;
+
+  const open = () => new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        db.createObjectStore(STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  const get = async (key) => {
+    try {
+      const db = await open();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readonly');
+        const store = tx.objectStore(STORE);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result ?? null);
+        req.onerror = () => reject(req.error);
+        tx.oncomplete = () => db.close();
+      });
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const set = async (key, value) => {
+    try {
+      const db = await open();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const store = tx.objectStore(STORE);
+        const req = store.put(value, key);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+        tx.oncomplete = () => db.close();
+      });
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const remove = async (key) => {
+    try {
+      const db = await open();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const store = tx.objectStore(STORE);
+        const req = store.delete(key);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+        tx.oncomplete = () => db.close();
+      });
+    } catch (e) {
+      return false;
+    }
+  };
+
+  return { get, set, remove };
+})();
 
 const updateStorageStatusUI = () => {
   const el = document.getElementById('storageStatus');
@@ -2390,7 +2460,8 @@ const prices = {
 
   // Завантажити ціни з localStorage
   async loadPrices() {
-    const saved = storage.getLocal('castello_prices') || storage.getSession('castello_prices');
+    const saved = storage.getLocal('castello_prices') || storage.getSession('castello_prices')
+      || await dbStore.get('castello_prices');
     if (saved) {
       try {
         const loaded = JSON.parse(saved);
@@ -2404,7 +2475,8 @@ const prices = {
     }
     
     // Завантажити ціни продажу
-    const savedSellPrices = storage.getLocal('castello_sell_prices') || storage.getSession('castello_sell_prices');
+    const savedSellPrices = storage.getLocal('castello_sell_prices') || storage.getSession('castello_sell_prices')
+      || await dbStore.get('castello_sell_prices');
     if (savedSellPrices) {
       try {
         const loaded = JSON.parse(savedSellPrices);
@@ -2422,23 +2494,25 @@ const prices = {
   // Зберегти ціни в localStorage
   async savePrices() {
     const raw = JSON.stringify(COST_PRICES);
-    if (!storage.setLocal('castello_prices', raw)) {
-      showStorageWarning('⚠️ Браузер блокує збереження цін. Дані будуть збережені лише на цей сеанс.');
-      storage.setSession('castello_prices', raw);
-    } else {
-      storage.removeSession('castello_prices');
-    }
+      if (!storage.setLocal('castello_prices', raw)) {
+        showStorageWarning('⚠️ Браузер блокує збереження цін. Дані будуть збережені лише на цей сеанс.');
+        storage.setSession('castello_prices', raw);
+      } else {
+        storage.removeSession('castello_prices');
+      }
+      await dbStore.set('castello_prices', raw);
   },
 
   // Зберегти ціни продажу
   async saveSellPrices() {
     const raw = JSON.stringify(this.weaponSellPrices);
-    if (!storage.setLocal('castello_sell_prices', raw)) {
-      showStorageWarning('⚠️ Браузер блокує збереження цін продажу. Дані будуть збережені лише на цей сеанс.');
-      storage.setSession('castello_sell_prices', raw);
-    } else {
-      storage.removeSession('castello_sell_prices');
-    }
+      if (!storage.setLocal('castello_sell_prices', raw)) {
+        showStorageWarning('⚠️ Браузер блокує збереження цін продажу. Дані будуть збережені лише на цей сеанс.');
+        storage.setSession('castello_sell_prices', raw);
+      } else {
+        storage.removeSession('castello_sell_prices');
+      }
+      await dbStore.set('castello_sell_prices', raw);
   },
 
   // Показати модаль з цінами
@@ -2618,6 +2692,9 @@ const about = {
           storage.removeLocal(key);
           storage.removeSession(key);
         });
+        dbStore.remove(CONFIG.STORAGE_KEY);
+        dbStore.remove('castello_prices');
+        dbStore.remove('castello_sell_prices');
         location.reload();
       });
     }
