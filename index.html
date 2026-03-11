@@ -145,6 +145,132 @@ header {
   }
 }
 
+/* --- MOBILE MODE (class-based, for reliable phone layout) --- */
+body.mobile-mode {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mobile-mode .app-container {
+  display: flex !important;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+.mobile-mode header {
+  height: 52px;
+  padding: 0 10px;
+  flex: 0 0 auto;
+}
+
+.mobile-mode .mobile-nav {
+  display: flex !important;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg-panel);
+  flex: 0 0 auto;
+}
+
+.mobile-mode .mobile-nav-btn {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 12px;
+  text-align: center;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mobile-mode .mobile-nav-btn:active {
+  background: rgba(195, 154, 107, 0.1);
+}
+
+.mobile-mode .mobile-nav-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--primary);
+}
+
+.mobile-mode .panel {
+  padding: 12px;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.mobile-mode .panel-l,
+.mobile-mode .panel-m {
+  display: none;
+  border: none;
+}
+
+.mobile-mode .panel-l.active-tab,
+.mobile-mode .panel-m.active-tab {
+  display: flex;
+}
+
+.mobile-mode .panel-m,
+.mobile-mode .panel-l {
+  overflow-y: auto;
+}
+
+.mobile-mode .detail-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mobile-mode .res-grid {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.mobile-mode .brand {
+  font-size: 16px;
+  gap: 6px;
+}
+
+.mobile-mode .brand i {
+  font-size: 20px;
+}
+
+.mobile-mode button {
+  padding: 6px 8px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.mobile-mode #dName {
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.mobile-mode .author-footer {
+  font-size: 10px;
+  padding: 8px 0;
+  margin-top: auto;
+}
+
+.mobile-mode .modal {
+  width: 95%;
+  padding: 20px;
+  max-width: 480px;
+}
+
+.mobile-mode .modal-header h3 {
+  font-size: 14px;
+}
+
+.mobile-mode .price-grid,
+.mobile-mode .modal-two {
+  grid-template-columns: 1fr;
+}
+
 /* --- CONTROLS --- */
 .controls {
   display: flex;
@@ -788,129 +914,6 @@ input::placeholder, textarea::placeholder {
   body {
     height: 100vh;
     overflow: hidden;
-  }
-
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100%;
-  }
-
-  header {
-    height: 52px;
-    padding: 0 10px;
-    flex: 0 0 auto;
-  }
-
-  .mobile-nav {
-    display: flex !important;
-    gap: 0;
-    border-bottom: 2px solid var(--border);
-    background: var(--bg-panel);
-    flex: 0 0 auto;
-  }
-
-  .mobile-nav-btn {
-    flex: 1;
-    padding: 12px 8px;
-    font-size: 12px;
-    text-align: center;
-    border: none;
-    border-bottom: 3px solid transparent;
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .mobile-nav-btn:active {
-    background: rgba(195, 154, 107, 0.1);
-  }
-
-  .mobile-nav-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--primary);
-  }
-
-  .panel {
-    padding: 12px;
-    gap: 10px;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  .panel-l,
-  .panel-m {
-    display: none;
-    border: none;
-  }
-
-  .panel-l.active-tab,
-  .panel-m.active-tab {
-    display: flex;
-  }
-
-  .panel-m {
-    overflow-y: auto;
-  }
-
-  .panel-l {
-    overflow-y: auto;
-  }
-
-  .detail-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .res-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-
-  .brand {
-    font-size: 16px;
-    gap: 6px;
-  }
-
-  .brand i {
-    font-size: 20px;
-  }
-
-  button {
-    padding: 6px 8px;
-    font-size: 11px;
-    gap: 4px;
-  }
-
-  #dName {
-    font-size: 20px;
-    letter-spacing: 1px;
-  }
-
-  .author-footer {
-    font-size: 10px;
-    padding: 8px 0;
-    margin-top: auto;
-  }
-
-  .modal {
-    width: 95%;
-    padding: 20px;
-    max-width: 480px;
-  }
-
-  .modal-header h3 {
-    font-size: 14px;
-  }
-
-  .price-grid,
-  .modal-two {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -2246,9 +2249,29 @@ if (isTouchDevice()) {
   document.head.appendChild(style);
 }
 
+/* Надійне перемикання мобільного режиму */
+const applyMobileMode = () => {
+  const width = Math.min(window.innerWidth || 0, window.screen?.width || 0) || window.innerWidth;
+  const shouldUseMobile = width <= 720;
+  document.body.classList.toggle('mobile-mode', shouldUseMobile);
+};
+
+let mobileResizeTimer;
+const onResizeMobile = () => {
+  clearTimeout(mobileResizeTimer);
+  mobileResizeTimer = setTimeout(() => {
+    applyMobileMode();
+    setupMobileNav();
+  }, 120);
+};
+
+applyMobileMode();
+window.addEventListener('resize', onResizeMobile);
+
 /* Мобільна навігація (перемикання між списком і деталями) */
-const setupMobileNav = () => {
-  if (window.innerWidth > 640) return;
+function setupMobileNav() {
+  if (!document.body.classList.contains('mobile-mode')) return;
+  if (app.__mobileNavSetup) return;
   
   const mobileNav = document.querySelector('.mobile-nav');
   const panelL = document.querySelector('.panel-l');
@@ -2281,7 +2304,7 @@ const setupMobileNav = () => {
 
   app.select = function(id) {
     originalSelect.call(this, id);
-    if (window.innerWidth <= 640) {
+    if (document.body.classList.contains('mobile-mode')) {
       setTimeout(switchToDetails, 50);
     }
   };
@@ -2291,7 +2314,8 @@ const setupMobileNav = () => {
   
   // По замовченню показуємо список
   switchToList();
-};
+  app.__mobileNavSetup = true;
+}
 
 /* --- PRICES CONTROLLER --- */
 const prices = {
