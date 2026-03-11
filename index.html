@@ -164,8 +164,8 @@ body.mobile-mode {
   flex: 0 0 auto;
 }
 
-.mobile-mode .mobile-nav {
-  display: flex !important;
+  .mobile-mode .mobile-nav {
+  display: none !important;
   gap: 0;
   border-bottom: 2px solid var(--border);
   background: var(--bg-panel);
@@ -197,16 +197,16 @@ body.mobile-mode {
   border-bottom-color: var(--primary);
 }
 
-.mobile-mode .panel {
+  .mobile-mode .panel {
   padding: 12px;
   gap: 10px;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.mobile-mode .panel-l,
-.mobile-mode .panel-m {
-  display: none;
+  .mobile-mode .panel-l,
+  .mobile-mode .panel-m {
+  display: flex;
   border: none;
 }
 
@@ -292,7 +292,7 @@ body.mobile-mode {
   }
 
   .mobile-nav {
-    display: flex !important;
+    display: none !important;
     gap: 0;
     border-bottom: 2px solid var(--border);
     background: var(--bg-panel);
@@ -333,7 +333,7 @@ body.mobile-mode {
 
   .panel-l,
   .panel-m {
-    display: none;
+    display: flex;
     border: none;
   }
 
@@ -1260,7 +1260,6 @@ input::placeholder, textarea::placeholder {
     <div class="header-actions">
       <button class="btn-ghost btn-icon" id="btnTheme" title="Перемкнути тему"><i class="ri-sun-line"></i></button>
       <button class="btn-primary" id="btnPrices" title="Управління цінами"><i class="ri-price-tag-3-line"></i> Ціни</button>
-      <button class="btn-ghost btn-icon" id="btnViewMode" title="Перемкнути вигляд"><i class="ri-smartphone-line"></i></button>
       <button class="btn-ghost btn-icon" id="btnAbout" title="Про програму"><i class="ri-information-line"></i></button>
     </div>
   </header>
@@ -2379,21 +2378,6 @@ if (isTouchDevice()) {
 }
 
 /* Надійне перемикання мобільного режиму */
-const getForcedView = () => {
-  try {
-    return localStorage.getItem('castello_force_view');
-  } catch {
-    return null;
-  }
-};
-
-const setForcedView = (value) => {
-  try {
-    if (!value) localStorage.removeItem('castello_force_view');
-    else localStorage.setItem('castello_force_view', value);
-  } catch {}
-};
-
 const clearInlineMobileOverrides = () => {
   const appContainer = document.querySelector('.app-container');
   const panelL = document.querySelector('.panel-l');
@@ -2417,9 +2401,8 @@ const clearInlineMobileOverrides = () => {
 };
 
 const applyMobileMode = () => {
-  const forced = getForcedView();
   const width = Math.min(window.innerWidth || 0, window.screen?.width || 0) || window.innerWidth;
-  const shouldUseMobile = forced === 'mobile' ? true : (forced === 'desktop' ? false : width <= 720);
+  const shouldUseMobile = width <= 720;
   document.body.classList.toggle('mobile-mode', shouldUseMobile);
 
   if (!shouldUseMobile) {
@@ -2441,13 +2424,12 @@ const applyMobileMode = () => {
   }
   if (panelL) {
     panelL.style.display = 'flex';
-    panelL.classList.add('active-tab');
   }
   if (panelM) {
-    panelM.style.display = 'none';
+    panelM.style.display = 'flex';
   }
   if (mobileNav) {
-    mobileNav.style.display = 'flex';
+    mobileNav.style.display = 'none';
   }
 };
 
@@ -2467,80 +2449,9 @@ window.addEventListener('resize', onResizeMobile);
 function setupMobileNav() {
   if (!document.body.classList.contains('mobile-mode')) return;
   if (app.__mobileNavSetup) return;
-  
-  const mobileNav = document.querySelector('.mobile-nav');
-  const panelL = document.querySelector('.panel-l');
-  const panelM = document.querySelector('.panel-m');
-  const navList = document.getElementById('navList');
-  const navDetails = document.getElementById('navDetails');
-  
-  if (!mobileNav || !panelL || !panelM || !navList || !navDetails) return;
-  
-  const switchToList = () => {
-    panelL.classList.add('active-tab');
-    panelM.classList.remove('active-tab');
-    navList.classList.add('active');
-    navDetails.classList.remove('active');
-  };
-  
-  const switchToDetails = () => {
-    panelL.classList.remove('active-tab');
-    panelM.classList.add('active-tab');
-    navList.classList.remove('active');
-    navDetails.classList.add('active');
-  };
-  
-  navList.addEventListener('click', switchToList);
-  navDetails.addEventListener('click', switchToDetails);
-  
-  // При виборі рецепту автоматично перейти на деталі
-  if (!app.__selectWrapped) {
-  const originalSelect = app.select;
-
-  app.select = function(id) {
-    originalSelect.call(this, id);
-    if (document.body.classList.contains('mobile-mode')) {
-      setTimeout(switchToDetails, 50);
-    }
-  };
-
-  app.__selectWrapped = true;
-}
-
-const setupViewToggle = () => {
-  const btn = document.getElementById('btnViewMode');
-  if (!btn) return;
-
-  const updateIcon = () => {
-    const forced = getForcedView();
-    if (forced === 'mobile') {
-      btn.innerHTML = '<i class="ri-computer-line"></i>';
-      btn.title = 'Перемкнути на десктоп';
-    } else if (forced === 'desktop') {
-      btn.innerHTML = '<i class="ri-smartphone-line"></i>';
-      btn.title = 'Перемкнути на мобільний';
-    } else {
-      btn.innerHTML = '<i class="ri-smartphone-line"></i>';
-      btn.title = 'Перемкнути вигляд';
-    }
-  };
-
-  updateIcon();
-  btn.addEventListener('click', () => {
-    const forced = getForcedView();
-    if (forced === 'mobile') setForcedView('desktop');
-    else if (forced === 'desktop') setForcedView(null);
-    else setForcedView('mobile');
-    applyMobileMode();
-    setupMobileNav();
-    updateIcon();
-  });
-};
-  
-  // По замовченню показуємо список
-  switchToList();
   app.__mobileNavSetup = true;
 }
+
 
 /* --- PRICES CONTROLLER --- */
 const prices = {
@@ -2796,7 +2707,6 @@ const about = {
 // Ініціалізація аутентифікації
 auth.init();
 setupMobileNav();
-setupViewToggle();
 </script>
 </body>
 
