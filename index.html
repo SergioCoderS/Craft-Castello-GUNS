@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="uk">
 <head>
 <meta charset="utf-8" />
@@ -945,12 +945,6 @@ input::placeholder, textarea::placeholder {
 }
 
 /* --- UTILITY CLASSES --- */
-.search-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
 .detail-title {
   margin: 0;
   font-size: 26px;
@@ -1112,34 +1106,12 @@ input::placeholder, textarea::placeholder {
     </div>
     <div class="header-actions">
       <button class="btn-ghost btn-icon" id="btnTheme" title="Перемкнути тему"><i class="ri-sun-line"></i></button>
-      <button class="btn-ghost btn-icon" id="btnPrices" title="Управління цінами"><i class="ri-price-tag-3-line"></i></button>
+      <button class="btn-primary" id="btnPrices" title="Управління цінами"><i class="ri-price-tag-3-line"></i> Ціни</button>
       <button class="btn-ghost btn-icon" id="btnAbout" title="Про програму"><i class="ri-information-line"></i></button>
-      <button class="btn-primary" id="btnAdmin"><i class="ri-hammer-line"></i> Адміністрування</button>
     </div>
   </header>
 
   <aside class="panel panel-l">
-    <div class="controls">
-      <div style="position: relative; display: flex; align-items: center;">
-        <input id="search" placeholder="Пошук..." style="flex: 1;">
-        <button id="btnClearSearch" class="btn-ghost btn-icon" style="position: absolute; right: 4px; margin: 0;" title="Очистити пошук"><i class="ri-close-line"></i></button>
-      </div>
-      <div class="sort-group">
-        <select id="catFilter">
-          <option value="">Всі категорії</option>
-        </select>
-        <select id="sortFilter">
-          <option value="name">По назві</option>
-          <option value="price-asc">Ціна: дешевше</option>
-          <option value="price-desc">Ціна: дорожче</option>
-          <option value="category">По категорії</option>
-        </select>
-      </div>
-      <div class="qty-group">
-        <label for="qtyMultiplier">Кількість:</label>
-        <input id="qtyMultiplier" type="number" min="1" max="100" value="1">
-      </div>
-    </div>
     <div id="recipeList" style="flex: 1;"></div>
     <div class="mobile-nav">
       <button class="mobile-nav-btn active" id="navList"><i class="ri-list-check-2"></i> Список</button>
@@ -1154,9 +1126,8 @@ input::placeholder, textarea::placeholder {
           <h2 id="dName" style="margin:0; font-size: 26px">Назва</h2>
           <span id="dCat" class="badge">Категорія</span>
         </div>
-        <div class="qty-display">
-          <label for="recipeQty">Кількість:</label>
-          <input id="recipeQty" type="number" min="1" max="100" value="1">
+        <div>
+          <button class="btn-ghost" id="btnEdit" style="display:none"><i class="ri-edit-2-line"></i> Редагувати</button>
         </div>
       </div>
 
@@ -1165,10 +1136,17 @@ input::placeholder, textarea::placeholder {
       <h3 class="section-title"><i class="ri-hand-coin-line"></i> Собівартість предмета</h3>
       <div id="dCost" class="cost-display">$0</div>
       
-      <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Ваша ціна продажу</label>
-          <div id="dSellPrice" class="cost-display" style="font-size: 24px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" title="Встав ціну в Управління цінами">$0</div>
+       <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+         <div>
+          <div style="display:flex; align-items:center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+            <label style="color: var(--text-muted); font-size: 12px;">Ваша ціна продажу</label>
+            <span class="badge">Ціна</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom: 8px;">
+            <input type="number" id="detailSellPrice" placeholder="Введіть ціну" min="0" style="flex: 1;">
+            <button class="btn-primary" id="btnSetDetailPrice" style="white-space: nowrap;">Встановити</button>
+          </div>
+          <div id="dSellPrice" class="cost-display" style="font-size: 24px;">$0</div>
         </div>
         <div>
           <label style="color: var(--text-muted); font-size: 12px; display: block; margin-bottom: 8px;">Прибуток</label>
@@ -1178,7 +1156,7 @@ input::placeholder, textarea::placeholder {
       
       <hr class="decorative-hr">
       
-      <h3 class="section-title"><i class="ri-tools-line"></i> Компоненти для 1 шт.</h3>
+      <h3 class="section-title"><i class="ri-tools-line"></i> Компоненти</h3>
       <div id="dResources" class="res-grid"></div>
 
       <h3 class="section-title" style="margin-top:25px"><i class="ri-bar-chart-box-line"></i> Потрібні злитки </h3>
@@ -1199,6 +1177,7 @@ input::placeholder, textarea::placeholder {
     <div class="author-footer" style="margin-top: auto;">
       <div style="margin-bottom: 4px; cursor: pointer;" id="authorLink">🎨 <span style="color: var(--accent); font-weight: 700; transition: color 0.2s;" id="authorName">Sergio Castello</span></div>
       <div>Forge RP 🔥</div>
+      <div id="lastUpdated" style="margin-top: 4px;">Оновлено: --</div>
     </div>
   </main>
 </div>
@@ -1262,39 +1241,6 @@ input::placeholder, textarea::placeholder {
         </div>
       </div>
 
-      <hr class="decorative-hr">
-      
-      <h4 class="section-title"><i class="ri-shopping-cart-2-line"></i> Розрахунок прибутку</h4>
-      
-      <div>
-        <label style="color: var(--text-muted); font-size: 12px;">Оберіть зброю:</label>
-        <select id="profitWeaponSelect" style="width: 100%;">
-          <option value="">-- Виберіть предмет --</option>
-        </select>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Собівартість</label>
-          <div id="costValue" style="padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; color: var(--accent); font-weight: bold; text-align: center;">$0</div>
-        </div>
-        <div>
-          <label style="color: var(--text-muted); font-size: 12px;">Ваша ціна продажу</label>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <input type="number" id="sellPrice" placeholder="Введіть ціну продажу" min="0" style="flex: 1;">
-            <button class="btn-primary" id="btnSetPrice" style="padding: 8px 16px; font-size: 14px; white-space: nowrap;">Встановити</button>
-          </div>
-        </div>
-      </div>
-      
-      <div style="margin-top: 15px; padding: 12px; background: rgba(195, 154, 107, 0.1); border-left: 3px solid var(--primary); border-radius: 4px;">
-        <div style="font-size: 12px; color: var(--text-muted);">💰 Прибуток на одиницю:</div>
-        <div id="profitValue" style="font-size: 24px; font-weight: bold; color: var(--success); text-align: center;">$0</div>
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-primary" id="btnResetPrices">Відновити стандартні ціни</button>
-      </div>
     </div>
   </div>
 </div>
@@ -1329,6 +1275,7 @@ input::placeholder, textarea::placeholder {
         <option value="Інше">Інше</option>
       </select>
       <textarea id="admRes" rows="6" placeholder="Ресурси (один на рядок), напр:&#10;Дуло:1&#10;Злиток заліза:5"></textarea>
+      <div style="color: var(--text-muted); font-size: 11px;">Автозбереження увімкнено</div>
       
       <div class="modal-actions">
         <button class="btn-primary" id="btnSaveAdmin">Зберегти</button>
@@ -1348,6 +1295,7 @@ const CONFIG = {
   TOAST_DURATION: 2000,
   STORAGE_KEY: 'castello_db',
   THEME_STORAGE_KEY: 'castello_theme',
+  LAST_UPDATED_KEY: 'castello_last_updated',
   DEBOUNCE_DELAY: 300,
   CONFIRM_DELETE: 'Видалити?'
 };
@@ -1447,8 +1395,15 @@ async function saveDatabase() {
     if (!storage.setLocal(CONFIG.STORAGE_KEY, raw)) {
       showStorageWarning('⚠️ Браузер блокує збереження бази. Дані збережено лише на цей сеанс.');
       storage.setSession(CONFIG.STORAGE_KEY, raw);
+      const nowIso = new Date().toISOString();
+      storage.setSession(CONFIG.LAST_UPDATED_KEY, nowIso);
+      updateLastUpdatedUI(nowIso);
     } else {
       storage.removeSession(CONFIG.STORAGE_KEY);
+      const nowIso = new Date().toISOString();
+      storage.setLocal(CONFIG.LAST_UPDATED_KEY, nowIso);
+      storage.removeSession(CONFIG.LAST_UPDATED_KEY);
+      updateLastUpdatedUI(nowIso);
     }
   } catch (e) {
     console.error('Помилка при збереженні БД:', e);
@@ -1461,21 +1416,21 @@ let HISTORY_INDEX = -1;
 
 // --- VERSION INFO ---
 const VERSION_INFO = {
-  version: '2.0.0',
-  releaseDate: '20.02.2026',
+  version: '2.2.0',
+  releaseDate: '11.03.2026',
   author: 'SERGO',
   changelog: [
     {
-      version: '2.0.0',
-      date: '20.02.2026',
+      version: '2.2.0',
+      date: '11.03.2026',
       changes: [
-        '🔐 Додано шифрування бази даних AES-GCM 256-bit',
-        '🔒 Пароль тепер зберігається як SHA-256 хеш',
-        '💾 Зашифровані ціни та дані про продажі',
-        '🛡️ Безпечне керування сеансами з sessionStorage',
-        '✅ Розширена валідація даних та обробка помилок',
-        '🐛 Виправлені потенційні race conditions',
-        '📝 Поліпшена обробка асинхронних операцій'
+        '🧹 Прибрано авторизацію та шифрування',
+        '✏️ Кнопка редагування перенесена в деталі',
+        '💾 Автозбереження в адмінці',
+        '🕒 Додано індикатор останнього оновлення',
+        '🗑️ Кнопка очищення локальних даних',
+        '💰 Встановлення ціни продажу перенесено в деталі',
+        '🧩 Спрощено інтерфейс (без пошуку, сортування і кількості)'
       ]
     },
     {
@@ -1579,11 +1534,6 @@ const utils = {
     return { resources, errors };
   },
 
-  search(array, query, fn) {
-    if (!query) return array;
-    return array.filter(item => fn(item, query));
-  },
-
   sort(array, field) {
     const copy = [...array];
 
@@ -1654,6 +1604,21 @@ const storage = {
 
 const showStorageWarning = (message) => {
   app?.showToast?.(message, true);
+};
+
+const updateLastUpdatedUI = (value) => {
+  const el = document.getElementById('lastUpdated');
+  if (!el) return;
+  if (!value) {
+    el.textContent = 'Оновлено: --';
+    return;
+  }
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) {
+    el.textContent = `Оновлено: ${value}`;
+    return;
+  }
+  el.textContent = `Оновлено: ${dt.toLocaleString('uk-UA')}`;
 };
 
 
@@ -1753,45 +1718,14 @@ const app = {
       console.error('БД не завантажена правильно');
       DB = RECIPES_DATA;
     }
-    app.renderCats();
     app.renderList();
+    updateLastUpdatedUI(storage.getLocal(CONFIG.LAST_UPDATED_KEY) || storage.getSession(CONFIG.LAST_UPDATED_KEY));
     utils.saveToHistory();
   },
 
 
-  renderCats() {
-    const catIcons = {
-      'Гвинтівка': '🔫',
-      'Дробовик': '💣',
-      'Револьвер': '🔪',
-      'Ріпітер': '⚡',
-      'Інструменти': '🔨',
-      'Інше': '📦'
-    };
-    const cats = [...new Set(DB.recipes.map(r => r.cat))]
-      .sort((a, b) => a.localeCompare(b, 'uk'));
-
-    document.getElementById('catFilter').innerHTML =
-      '<option value="">Всі категорії</option>' +
-      cats.map(c => {
-        const safeCat = escapeHtml(c);
-        const icon = escapeHtml(catIcons[c] || '•');
-        return `<option value="${safeCat}">${icon} ${safeCat}</option>`;
-      }).join('');
-  },
-
   renderList() {
-    const q = document.getElementById('search').value.toLowerCase();
-    const cat = document.getElementById('catFilter').value;
-    const sortBy = document.getElementById('sortFilter').value || 'name';
-
-    let filtered = DB.recipes.filter(r => {
-      const catMatch = !cat || r.cat === cat;
-      const nameMatch = !q || r.name.toLowerCase().includes(q);
-      return catMatch && nameMatch;
-    });
-
-    filtered = utils.sort(filtered, sortBy);
+    const filtered = DB.recipes;
 
     const list = document.getElementById('recipeList');
     if (!list) return;
@@ -1819,20 +1753,18 @@ const app = {
 
     document.getElementById('emptyState')?.classList.add('hidden');
     document.getElementById('detailContent').style.display = 'block';
+    const editBtn = document.getElementById('btnEdit');
+    if (editBtn) editBtn.style.display = 'inline-flex';
 
     document.getElementById('dName').textContent = r.name;
     document.getElementById('dCat').textContent = r.cat;
-    document.getElementById('recipeQty').value = 1;
-
     this.updateRecipeDisplay(r, 1);
     
-    // Синхронізувати вибір у меню ціна
-    const profitWeaponSelect = document.getElementById('profitWeaponSelect');
-    if (profitWeaponSelect) {
-      profitWeaponSelect.value = id;
-      // Також викличемо selectWeapon щоб завантажилася збережена ціна
-      prices.selectWeapon(id);
+    const detailSellPrice = document.getElementById('detailSellPrice');
+    if (detailSellPrice) {
+      detailSellPrice.value = prices.weaponSellPrices[id] || '';
     }
+    prices.updateMainPanelProfit();
   },
 
   updateRecipeDisplay(recipe, qty) {
@@ -1942,7 +1874,6 @@ if (dBase) {
   saveDB() {
     saveDatabase();
     app.renderList();
-    app.renderCats();
   },
 
   showToast(message, isError = false) {
@@ -1981,47 +1912,54 @@ const admin = {
     document.getElementById('btnDelete').style.display = 'none';
   },
   
-  save() {
+  save(options = {}) {
     const name = document.getElementById('admName').value?.trim();
     const cat = document.getElementById('admCat').value;
     const resText = document.getElementById('admRes').value;
+    const silent = !!options.silent;
+    const keepOpen = !!options.keepOpen;
     
     if(!name) {
-      app.showToast('Вкажіть назву', true);
+      if (!silent) app.showToast('Вкажіть назву', true);
       return;
     }
     
     const { resources, errors } = utils.validateResourcesText(resText);
     
     if (errors.length > 0) {
-      app.showToast(errors[0], true);
+      if (!silent) app.showToast(errors[0], true);
       return;
     }
 
     if(Object.keys(resources).length === 0) {
-      app.showToast('Додайте хоча б один ресурс', true);
+      if (!silent) app.showToast('Додайте хоча б один ресурс', true);
       return;
     }
 
     const isEditing = ACTIVE_ID && document.getElementById('btnDelete').style.display !== 'none';
     let r = isEditing ? DB.recipes.find(x => x.id === ACTIVE_ID) : null;
     if (isEditing && !r) {
-      app.showToast('⚠️ Рецепт не знайдено. Створюється новий.', true);
+      if (!silent) app.showToast('⚠️ Рецепт не знайдено. Створюється новий.', true);
     }
 
     if(r) {
       r.name = name; 
       r.cat = cat; 
       r.resources = resources;
-      app.showToast('✓ Оновлено');
+      if (!silent) app.showToast('✓ Оновлено');
     } else {
       const newId = Date.now();
       DB.recipes.push({ id: newId, name, cat, resources });
-      app.showToast('✓ Створено');
+      if (!silent) app.showToast('✓ Створено');
+      ACTIVE_ID = newId;
     }
     
     app.saveDB();
-    app.toggleAdmin();
+    app.renderList();
+    if (ACTIVE_ID) {
+      app.select(ACTIVE_ID);
+    }
+    if (!keepOpen) app.toggleAdmin();
   },
   
   del() {
@@ -2033,6 +1971,8 @@ const admin = {
       app.toggleAdmin();
       document.getElementById('detailContent').style.display = 'none';
       document.getElementById('emptyState').classList.remove('hidden');
+      const editBtn = document.getElementById('btnEdit');
+      if (editBtn) editBtn.style.display = 'none';
       app.showToast('✓ Видалено');
     }
   }
@@ -2050,7 +1990,13 @@ if (savedTheme === 'light') {
   }
 }
 
-const debouncedRender = utils.debounce(() => app.renderList(), CONFIG.DEBOUNCE_DELAY);
+const debouncedAdminSave = utils.debounce(() => {
+  const modal = document.getElementById('adminModal');
+  const deleteBtn = document.getElementById('btnDelete');
+  if (!modal || modal.classList.contains('hidden')) return;
+  if (!ACTIVE_ID || (deleteBtn && deleteBtn.style.display === 'none')) return;
+  admin.save({ silent: true, keepOpen: true });
+}, 600);
 
 // Безпечне додавання слухачів з перевіркою
 const addEventListenerSafe = (id, event, handler) => {
@@ -2062,23 +2008,19 @@ const addEventListenerSafe = (id, event, handler) => {
   }
 };
 
-addEventListenerSafe('btnAdmin', 'click', () => app.toggleAdmin());
+addEventListenerSafe('btnEdit', 'click', () => app.toggleAdmin());
 addEventListenerSafe('btnCloseAdmin', 'click', () => app.toggleAdmin());
 addEventListenerSafe('btnPrices', 'click', () => prices.show());
 addEventListenerSafe('btnClosePrices', 'click', () => prices.hide());
-addEventListenerSafe('btnResetPrices', 'click', () => prices.reset());
 addEventListenerSafe('btnAbout', 'click', () => about.show());
 addEventListenerSafe('btnCloseAbout', 'click', () => about.hide());
 addEventListenerSafe('btnTheme', 'click', () => app.toggleTheme());
 addEventListenerSafe('btnSaveAdmin', 'click', () => admin.save());
 addEventListenerSafe('btnResetAdmin', 'click', () => admin.reset());
 addEventListenerSafe('btnDelete', 'click', () => admin.del());
-addEventListenerSafe('btnClearSearch', 'click', () => {
-  const searchInput = document.getElementById('search');
-  searchInput.value = '';
-  app.renderList();
-  searchInput.focus();
-});
+addEventListenerSafe('admName', 'input', () => debouncedAdminSave());
+addEventListenerSafe('admCat', 'change', () => debouncedAdminSave());
+addEventListenerSafe('admRes', 'input', () => debouncedAdminSave());
 
 // Копіювання нікнейму при натисканні на ім'я автора
 const authorLink = document.getElementById('authorLink');
@@ -2101,9 +2043,6 @@ if (authorLink) {
   });
 }
 
-addEventListenerSafe('search', 'input', () => debouncedRender());
-addEventListenerSafe('catFilter', 'change', () => app.renderList());
-addEventListenerSafe('sortFilter', 'change', () => app.renderList());
 
 // Слухачі для полів цін ресурсів (реальний час)
 document.addEventListener('input', async (e) => {
@@ -2113,33 +2052,18 @@ document.addEventListener('input', async (e) => {
   }
 });
 
-// Слухач для вибору зброї в меню управління цінами
-addEventListenerSafe('profitWeaponSelect', 'change', (e) => {
-  const selectedId = parseInt(e.target.value);
-  if (selectedId) {
-    prices.selectWeapon(selectedId);
-  } else {
-    prices.selectedWeaponId = null;
-    document.getElementById('costValue').textContent = '$0';
-    document.getElementById('sellPrice').value = '';
-    document.getElementById('profitValue').textContent = '$0';
+addEventListenerSafe('btnSetDetailPrice', 'click', async () => {
+  if (!ACTIVE_ID) {
+    app.showToast('Оберіть предмет', true);
+    return;
   }
-});
-
-// Слухач для ціни продажу (real-time оновлення при введенні)
-addEventListenerSafe('sellPrice', 'input', async (e) => {
-  await prices.updateSellPrice(e.target.value);
-});
-
-// Слухач для кнопки "Встановити ціну"
-addEventListenerSafe('btnSetPrice', 'click', async () => {
-  const sellPriceEl = document.getElementById('sellPrice');
+  const sellPriceEl = document.getElementById('detailSellPrice');
   const sellPrice = parseFloat(sellPriceEl?.value) || 0;
+  const btn = document.getElementById('btnSetDetailPrice');
+  if (!btn) return;
   
   if (sellPrice > 0) {
     await prices.updateSellPrice(sellPrice);
-    // Показати повідомлення про успіх
-    const btn = document.getElementById('btnSetPrice');
     const originalText = btn.textContent;
     btn.textContent = '✓ Встановлено!';
     btn.style.background = 'var(--success)';
@@ -2148,8 +2072,6 @@ addEventListenerSafe('btnSetPrice', 'click', async () => {
       btn.style.background = '';
     }, 2000);
   } else {
-    // Показати помилку
-    const btn = document.getElementById('btnSetPrice');
     const originalText = btn.textContent;
     btn.textContent = '⚠ Введіть ціну!';
     btn.style.background = 'var(--danger)';
@@ -2159,44 +2081,6 @@ addEventListenerSafe('btnSetPrice', 'click', async () => {
     }, 2000);
   }
 });
-
-// Функція для оновлення обох множників
-const updateBothQty = (qty) => {
-  const qtyNum = parseInt(qty) || 1;
-  if (qtyNum < 1 || qtyNum > 100) {
-    console.warn('Invalid qty value:', qty);
-    return;
-  }
-  
-  const qtyMult = document.getElementById('qtyMultiplier');
-  const qtyDetail = document.getElementById('recipeQty');
-  
-  if (qtyMult) qtyMult.value = qtyNum;
-  if (qtyDetail) qtyDetail.value = qtyNum;
-  
-  if (ACTIVE_ID) {
-    const recipe = DB.recipes.find(r => r.id === ACTIVE_ID);
-    if (recipe) app.updateRecipeDisplay(recipe, qtyNum);
-  }
-};
-
-// Множник для кількості (у панелі)
-const qtyMultiplierEl = document.getElementById('qtyMultiplier');
-if (qtyMultiplierEl) {
-  qtyMultiplierEl.addEventListener('change', () => {
-    const qty = parseInt(qtyMultiplierEl.value) || 1;
-    updateBothQty(qty);
-  });
-}
-
-// Множник в деталях
-const qtyDetailEl = document.getElementById('recipeQty');
-if (qtyDetailEl) {
-  qtyDetailEl.addEventListener('change', () => {
-    const qty = parseInt(qtyDetailEl.value) || 1;
-    updateBothQty(qty);
-  });
-}
 
 // Гарячі клавіші
 document.addEventListener('keydown', (e) => {
@@ -2293,6 +2177,9 @@ const prices = {
         if (loaded) Object.assign(COST_PRICES, loaded);
       } catch (e) {
         console.warn('Помилка завантаження цін');
+        storage.removeLocal('castello_prices');
+        storage.removeSession('castello_prices');
+        showStorageWarning('⚠️ Знайдено старі дані цін. Вони були очищені.');
       }
     }
     
@@ -2304,14 +2191,12 @@ const prices = {
         if (loaded) this.weaponSellPrices = loaded;
       } catch (e) {
         console.warn('Помилка завантаження цін продажу');
+        storage.removeLocal('castello_sell_prices');
+        storage.removeSession('castello_sell_prices');
+        showStorageWarning('⚠️ Знайдено старі дані цін продажу. Вони були очищені.');
       }
     }
     
-    // Завантажити останнє вибране оружие
-    const lastSelectedId = storage.getLocal('castello_last_weapon') || storage.getSession('castello_last_weapon');
-    if (lastSelectedId) {
-      this.lastSelectedWeaponId = parseInt(lastSelectedId);
-    }
   },
 
   // Зберегти ціни в localStorage
@@ -2336,28 +2221,10 @@ const prices = {
     }
   },
 
-  // Зберегти останнє вибране оружие
-  saveLastWeapon() {
-    if (this.selectedWeaponId) {
-      if (!storage.setLocal('castello_last_weapon', this.selectedWeaponId.toString())) {
-        storage.setSession('castello_last_weapon', this.selectedWeaponId.toString());
-      }
-    }
-  },
-
   // Показати модаль з цінами
   async show() {
     await this.loadPrices();
-    this.renderWeaponSelect();
     this.render();
-    // Відновити останнє вибране оружие
-    if (this.lastSelectedWeaponId) {
-      const select = document.getElementById('profitWeaponSelect');
-      if (select) {
-        select.value = this.lastSelectedWeaponId;
-        this.selectWeapon(this.lastSelectedWeaponId);
-      }
-    }
     document.getElementById('pricesModal').classList.remove('hidden');
   },
 
@@ -2366,43 +2233,17 @@ const prices = {
     document.getElementById('pricesModal').classList.add('hidden');
   },
 
-  // Відновити стандартні ціни
-  async reset() {
-    const defaults = {
-      "Злиток золота": 200,
-      "Злиток Срібла": 200,
-      "Злиток латуні": 65,
-      "Злиток сталі": 35,
-      "Злиток заліза": 25,
-      "Злиток міді": 25,
-      "Злиток цинку": 25,
-      "Злиток свинцю": 25,
-      "Вугілля": 1.5,
-      "Форма з глини": 5,
-    };
-    Object.assign(COST_PRICES, defaults);
-    await this.savePrices();
-    this.render();
-    if (ACTIVE_ID) app.select(ACTIVE_ID);
-    app.showToast('✓ Цени відновлено');
-  },
-
   // Оновити цену ресурсу в реальному часі
   async updatePrice(key, value) {
     const num = parseFloat(value) || 0;
     COST_PRICES[key] = num;
     await this.savePrices();
-    
-    // Оновити собівартість якщо зброя вибрана в меню ціна
-    if (this.selectedWeaponId) {
-      this.updateCostDisplay();
-    }
-    
+
     // Оновити також для головної панелі
     if (ACTIVE_ID) {
       const recipe = DB.recipes.find(x => x.id === ACTIVE_ID);
       if (recipe) {
-        app.updateRecipeDisplay(recipe, parseInt(document.getElementById('recipeQty')?.value || 1));
+        app.updateRecipeDisplay(recipe, 1);
       }
     }
   },
@@ -2411,30 +2252,20 @@ const prices = {
   async updateSellPrice(value) {
     const sellPrice = parseFloat(value) || 0;
     
-    // Зберегти ціну для цієї зброї
-    if (this.selectedWeaponId) {
-      if (sellPrice > 0) {
-        this.weaponSellPrices[this.selectedWeaponId] = sellPrice;
-      } else {
-        delete this.weaponSellPrices[this.selectedWeaponId];
-      }
-      await this.saveSellPrices();
+    if (!ACTIVE_ID) return;
+    if (sellPrice > 0) {
+      this.weaponSellPrices[ACTIVE_ID] = sellPrice;
+    } else {
+      delete this.weaponSellPrices[ACTIVE_ID];
     }
-    
-    // Оновити прибуток в меню
-    this.updateProfitDisplay(sellPrice);
-    
-    // Оновити прибуток на головній панелі якщо ця зброя є активною
-    if (ACTIVE_ID === this.selectedWeaponId) {
-      this.updateMainPanelProfit();
-    }
+    await this.saveSellPrices();
+    this.updateMainPanelProfit();
   },
 
   // Оновити прибуток на головній панелі
   updateMainPanelProfit() {
     const dSellPrice = document.getElementById('dSellPrice');
     const dProfit = document.getElementById('dProfit');
-    const sellPriceEl = document.getElementById('sellPrice');
     
     if (!dSellPrice || !dProfit || !ACTIVE_ID) {
       if (dSellPrice) dSellPrice.textContent = '$0';
@@ -2445,8 +2276,7 @@ const prices = {
     
     // Використовувати ціну для ACTIVE_ID з збережених цін
     const unitSellPrice = this.weaponSellPrices[ACTIVE_ID] || 0;
-    const qty = parseInt(document.getElementById('recipeQty')?.value || 1) || 1;
-    const totalSellPrice = unitSellPrice * qty;
+    const totalSellPrice = unitSellPrice;
     
     const dCostText = document.getElementById('dCost')?.textContent?.replace('$', '') || '0';
     const totalCost = parseFloat(dCostText) || 0;
@@ -2457,21 +2287,6 @@ const prices = {
     dProfit.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
   },
 
-  // Оновити відображення прибутку
-  updateProfitDisplay(sellPrice) {
-    const costEl = document.getElementById('costValue');
-    const profitEl = document.getElementById('profitValue');
-    
-    if (!costEl || !profitEl) return;
-    
-    const costText = costEl.textContent.replace('$', '');
-    const cost = parseFloat(costText) || 0;
-    const profit = sellPrice - cost;
-    
-    profitEl.textContent = `$${profit.toFixed(2)}`;
-    profitEl.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
-  },
-
   // Перемалювати форму з цінами
   render() {
     const inputs = document.querySelectorAll('.price-input');
@@ -2479,66 +2294,6 @@ const prices = {
       const key = input.dataset.key;
       input.value = COST_PRICES[key] || 0;
     });
-    
-    // Оновити собівартість для вибраного предмета
-    if (this.selectedWeaponId) {
-      this.updateCostDisplay();
-    }
-  },
-
-  // Наповнити select з зброєю
-  renderWeaponSelect() {
-    const select = document.getElementById('profitWeaponSelect');
-    if (!select) return;
-    
-    select.innerHTML = '<option value="">-- Виберіть предмет --</option>' +
-      DB.recipes
-        .sort((a, b) => a.name.localeCompare(b.name, 'uk'))
-        .map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`)
-        .join('');
-  },
-
-  // Обрати зброю для розрахунку прибутку
-  selectWeapon(recipeId) {
-    this.selectedWeaponId = recipeId;
-    this.saveLastWeapon();
-    
-    // Завантажити збережену ціну продажу для цієї зброї
-    const sellPriceEl = document.getElementById('sellPrice');
-    const savedPrice = this.weaponSellPrices[recipeId] || '';
-    if (sellPriceEl) {
-      sellPriceEl.value = savedPrice;
-      // Оновити прибуток відразу після встановлення ціни
-      this.updateProfitDisplay(parseFloat(savedPrice) || 0);
-    }
-    
-    this.updateCostDisplay();
-  },
-
-  // Оновити відображення собівартості для обраної зброї (переписана для незалежності від ACTIVE_ID)
-  updateCostDisplay() {
-    const costEl = document.getElementById('costValue');
-    const sellPriceEl = document.getElementById('sellPrice');
-    
-    if (!this.selectedWeaponId || !costEl) {
-      if (costEl) costEl.textContent = '$0';
-      return;
-    }
-    
-    const recipe = DB.recipes.find(x => x.id === this.selectedWeaponId);
-    if (!recipe) return;
-    
-    const cost = calc.calculateCost(recipe.resources);
-    costEl.textContent = `$${cost.toFixed(2)}`;
-    
-    // НЕ очищуємо sellPrice - зберігаємо введену ціну!
-    // Оновлюємо прибуток якщо ціна вже введена
-    if (sellPriceEl && sellPriceEl.value) {
-      const sellPrice = parseFloat(sellPriceEl.value) || 0;
-      this.updateProfitDisplay(sellPrice);
-    } else {
-      document.getElementById('profitValue').textContent = '$0';
-    }
   }
 };
 
@@ -2607,10 +2362,37 @@ const about = {
             • За потреби очищуйте кеш браузера
           </p>
         </div>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn-danger" id="btnClearData"><i class="ri-delete-bin-line"></i> Очистити локальні дані</button>
+          <div style="color: var(--text-muted); font-size: 11px;">Це видалить локальні рецепти, ціни та налаштування.</div>
+        </div>
       </div>
     `;
 
     content.innerHTML = html;
+    const clearBtn = document.getElementById('btnClearData');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (!confirm('Очистити всі локальні дані цього сайту?')) return;
+        const keys = [
+          CONFIG.STORAGE_KEY,
+          CONFIG.THEME_STORAGE_KEY,
+          CONFIG.LAST_UPDATED_KEY,
+          'castello_prices',
+          'castello_sell_prices',
+          'castello_last_weapon',
+          'castello_auth_hash',
+          'castello_auth_session',
+          'castello_auth_attempts',
+          '_session_pwd'
+        ];
+        keys.forEach((key) => {
+          storage.removeLocal(key);
+          storage.removeSession(key);
+        });
+        location.reload();
+      });
+    }
   }
 };
 
