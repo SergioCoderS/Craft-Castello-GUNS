@@ -1260,6 +1260,7 @@ input::placeholder, textarea::placeholder {
     <div class="header-actions">
       <button class="btn-ghost btn-icon" id="btnTheme" title="Перемкнути тему"><i class="ri-sun-line"></i></button>
       <button class="btn-primary" id="btnPrices" title="Управління цінами"><i class="ri-price-tag-3-line"></i> Ціни</button>
+      <button class="btn-ghost btn-icon" id="btnViewMode" title="Перемкнути вигляд"><i class="ri-smartphone-line"></i></button>
       <button class="btn-ghost btn-icon" id="btnAbout" title="Про програму"><i class="ri-information-line"></i></button>
     </div>
   </header>
@@ -2378,11 +2379,53 @@ if (isTouchDevice()) {
 }
 
 /* Надійне перемикання мобільного режиму */
+const getForcedView = () => {
+  try {
+    return localStorage.getItem('castello_force_view');
+  } catch {
+    return null;
+  }
+};
+
+const setForcedView = (value) => {
+  try {
+    if (!value) localStorage.removeItem('castello_force_view');
+    else localStorage.setItem('castello_force_view', value);
+  } catch {}
+};
+
+const clearInlineMobileOverrides = () => {
+  const appContainer = document.querySelector('.app-container');
+  const panelL = document.querySelector('.panel-l');
+  const panelM = document.querySelector('.panel-m');
+  const mobileNav = document.querySelector('.mobile-nav');
+  if (appContainer) {
+    appContainer.style.display = '';
+    appContainer.style.flexDirection = '';
+    appContainer.style.height = '';
+    appContainer.style.width = '';
+  }
+  if (panelL) {
+    panelL.style.display = '';
+  }
+  if (panelM) {
+    panelM.style.display = '';
+  }
+  if (mobileNav) {
+    mobileNav.style.display = '';
+  }
+};
+
 const applyMobileMode = () => {
+  const forced = getForcedView();
   const width = Math.min(window.innerWidth || 0, window.screen?.width || 0) || window.innerWidth;
-  const shouldUseMobile = width <= 720;
+  const shouldUseMobile = forced === 'mobile' ? true : (forced === 'desktop' ? false : width <= 720);
   document.body.classList.toggle('mobile-mode', shouldUseMobile);
-  if (!shouldUseMobile) return;
+
+  if (!shouldUseMobile) {
+    clearInlineMobileOverrides();
+    return;
+  }
 
   // Hard override for stubborn mobile rendering (inline styles win)
   const appContainer = document.querySelector('.app-container');
@@ -2463,6 +2506,36 @@ function setupMobileNav() {
 
   app.__selectWrapped = true;
 }
+
+const setupViewToggle = () => {
+  const btn = document.getElementById('btnViewMode');
+  if (!btn) return;
+
+  const updateIcon = () => {
+    const forced = getForcedView();
+    if (forced === 'mobile') {
+      btn.innerHTML = '<i class="ri-computer-line"></i>';
+      btn.title = 'Перемкнути на десктоп';
+    } else if (forced === 'desktop') {
+      btn.innerHTML = '<i class="ri-smartphone-line"></i>';
+      btn.title = 'Перемкнути на мобільний';
+    } else {
+      btn.innerHTML = '<i class="ri-smartphone-line"></i>';
+      btn.title = 'Перемкнути вигляд';
+    }
+  };
+
+  updateIcon();
+  btn.addEventListener('click', () => {
+    const forced = getForcedView();
+    if (forced === 'mobile') setForcedView('desktop');
+    else if (forced === 'desktop') setForcedView(null);
+    else setForcedView('mobile');
+    applyMobileMode();
+    setupMobileNav();
+    updateIcon();
+  });
+};
   
   // По замовченню показуємо список
   switchToList();
@@ -2723,6 +2796,7 @@ const about = {
 // Ініціалізація аутентифікації
 auth.init();
 setupMobileNav();
+setupViewToggle();
 </script>
 </body>
 
